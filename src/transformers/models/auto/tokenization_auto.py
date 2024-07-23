@@ -586,7 +586,24 @@ def get_tokenizer_config(
     tokenizer.save_pretrained("tokenizer-test")
     tokenizer_config = get_tokenizer_config("tokenizer-test")
     ```"""
+    # print("pretrained_model_name_or_path:", pretrained_model_name_or_path) # pretrained_model_name_or_path: distilbert/distilbert-base-uncased-finetuned-sst-2-english
+    # print("cache_dir:", cache_dir) # cache_dir: None
+    # print("force_download:", force_download) # force_download: False
+    # print("resume_download:", resume_download) # resume_download: False
+    # print("proxies:", proxies) # proxies: None
+    # print("token:", token) # token: None
+    # print("revision:", revision) # revision: None
+    # print("local_files_only:", local_files_only) # local_files_only: False
+    # print("subfolder:", subfolder) # subfolder:
+    # print("kwargs:", kwargs)
+    # kwargs: {
+    #     '_from_pipeline': 'text-classification',
+    #     '_commit_hash': '714eb0fa89d2f80546fda750413ed43d93601a13',
+    #     '_from_auto': True
+    # }
+
     use_auth_token = kwargs.pop("use_auth_token", None)
+    # print("use_auth_token:", use_auth_token) # use_auth_token: None
     if use_auth_token is not None:
         warnings.warn(
             "The `use_auth_token` argument is deprecated and will be removed in v5 of Transformers. Please use `token` instead.",
@@ -597,6 +614,19 @@ def get_tokenizer_config(
         token = use_auth_token
 
     commit_hash = kwargs.get("_commit_hash", None)
+    # print("commit_hash:", commit_hash) # commit_hash: 714eb0fa89d2f80546fda750413ed43d93601a13
+
+    # print("pretrained_model_name_or_path:", pretrained_model_name_or_path) # pretrained_model_name_or_path: distilbert/distilbert-base-uncased-finetuned-sst-2-english
+    # print("TOKENIZER_CONFIG_FILE:", TOKENIZER_CONFIG_FILE) # TOKENIZER_CONFIG_FILE: tokenizer_config.json
+    # print("cache_dir:", cache_dir) # cache_dir: None
+    # print("force_download:", force_download) # force_download: False
+    # print("resume_download:", resume_download) # resume_download: False
+    # print("proxies:", proxies) # proxies: None
+    # print("token:", token) # token: None
+    # print("revision:", revision) # revision: None
+    # print("local_files_only:", local_files_only) # local_files_only: False
+    # print("subfolder:", subfolder) # subfolder:
+    # print("commit_hash:", commit_hash) # commit_hash: 714eb0fa89d2f80546fda750413ed43d93601a13
     resolved_config_file = cached_file(
         pretrained_model_name_or_path,
         TOKENIZER_CONFIG_FILE,
@@ -613,6 +643,9 @@ def get_tokenizer_config(
         _raise_exceptions_for_connection_errors=False,
         _commit_hash=commit_hash,
     )
+    # print("resolved_config_file:", resolved_config_file)
+    # resolved_config_file: /home/codespace/.cache/huggingface/hub/models--distilbert--distilbert-base-uncased-finetuned-sst-2-english/snapshots/714eb0fa89d2f80546fda750413ed43d93601a13/tokenizer_config.json
+
     if resolved_config_file is None:
         logger.info("Could not locate the tokenizer configuration file, will try to use the model config instead.")
         return {}
@@ -621,6 +654,12 @@ def get_tokenizer_config(
     with open(resolved_config_file, encoding="utf-8") as reader:
         result = json.load(reader)
     result["_commit_hash"] = commit_hash
+    # print("result:", result)
+    # result: {
+    #     'model_max_length': 512,
+    #     'do_lower_case': True,
+    #     '_commit_hash': '714eb0fa89d2f80546fda750413ed43d93601a13'
+    # }
     return result
 
 
@@ -715,7 +754,20 @@ class AutoTokenizer:
         >>> # Download vocabulary from huggingface.co and define model-specific arguments
         >>> tokenizer = AutoTokenizer.from_pretrained("FacebookAI/roberta-base", add_prefix_space=True)
         ```"""
+        # print("pretrained_model_name_or_path:", pretrained_model_name_or_path) # pretrained_model_name_or_path: distilbert/distilbert-base-uncased-finetuned-sst-2-english
+        # print("inputs:", inputs) # inputs: ()
+        # print("kwargs:", kwargs)
+        # kwargs: {
+        #     'use_fast': True,
+        #     '_from_pipeline': 'text-classification',
+        #     'revision': None,
+        #     'token': None,
+        #     'trust_remote_code': None,
+        #     '_commit_hash': '714eb0fa89d2f80546fda750413ed43d93601a13'
+        # }
+
         use_auth_token = kwargs.pop("use_auth_token", None)
+        # print("use_auth_token:", use_auth_token) # use_auth_token: None
         if use_auth_token is not None:
             warnings.warn(
                 "The `use_auth_token` argument is deprecated and will be removed in v5 of Transformers. Please use `token` instead.",
@@ -728,11 +780,28 @@ class AutoTokenizer:
             kwargs["token"] = use_auth_token
 
         config = kwargs.pop("config", None)
+        # print("config:", config) # config: None
+
         kwargs["_from_auto"] = True
+        # print("kwargs:", kwargs)
+        # kwargs: {
+        #     'use_fast': True,
+        #     '_from_pipeline': 'text-classification',
+        #     'revision': None,
+        #     'token': None,
+        #     'trust_remote_code': None,
+        #     '_commit_hash': '714eb0fa89d2f80546fda750413ed43d93601a13',
+        #     '_from_auto': True
+        # }
 
         use_fast = kwargs.pop("use_fast", True)
+        # print("use_fast:", use_fast) # use_fast: True
+
         tokenizer_type = kwargs.pop("tokenizer_type", None)
+        # print("tokenizer_type:", tokenizer_type) # tokenizer_type: None
+
         trust_remote_code = kwargs.pop("trust_remote_code", None)
+        # print("trust_remote_code:", trust_remote_code) # trust_remote_code: None
 
         # First, let's see whether the tokenizer_type is passed so that we can leverage it
         if tokenizer_type is not None:
@@ -764,10 +833,38 @@ class AutoTokenizer:
             return tokenizer_class.from_pretrained(pretrained_model_name_or_path, *inputs, **kwargs)
 
         # Next, let's try to use the tokenizer_config file to get the tokenizer class.
+        # print("pretrained_model_name_or_path:", pretrained_model_name_or_path) # pretrained_model_name_or_path: distilbert/distilbert-base-uncased-finetuned-sst-2-english
+        # print("kwargs:", kwargs)
+        # kwargs: {
+        #     '_from_pipeline': 'text-classification',
+        #     'revision': None,
+        #     'token': None,
+        #     '_commit_hash': '714eb0fa89d2f80546fda750413ed43d93601a13',
+        #     '_from_auto': True
+        # }
         tokenizer_config = get_tokenizer_config(pretrained_model_name_or_path, **kwargs)
+        # print("tokenizer_config:", tokenizer_config)
+        # tokenizer_config.json
+        # tokenizer_config: {
+        #     'model_max_length': 512,
+        #     'do_lower_case': True,
+        #     '_commit_hash': '714eb0fa89d2f80546fda750413ed43d93601a13'
+        # }
+
         if "_commit_hash" in tokenizer_config:
             kwargs["_commit_hash"] = tokenizer_config["_commit_hash"]
+        # print("kwargs:", kwargs)
+        # kwargs: {
+        #     '_from_pipeline': 'text-classification',
+        #     'revision': None,
+        #     'token': None,
+        #     '_commit_hash': '714eb0fa89d2f80546fda750413ed43d93601a13',
+        #     '_from_auto': True
+        # }
+
         config_tokenizer_class = tokenizer_config.get("tokenizer_class")
+        # print("config_tokenizer_class:", config_tokenizer_class) # config_tokenizer_class: None
+
         tokenizer_auto_map = None
         if "auto_map" in tokenizer_config:
             if isinstance(tokenizer_config["auto_map"], (tuple, list)):
@@ -779,14 +876,64 @@ class AutoTokenizer:
         # If that did not work, let's try to use the config.
         if config_tokenizer_class is None:
             if not isinstance(config, PretrainedConfig):
+                # print("pretrained_model_name_or_path:", pretrained_model_name_or_path) # pretrained_model_name_or_path: distilbert/distilbert-base-uncased-finetuned-sst-2-english
+                # print("trust_remote_code:", trust_remote_code) # trust_remote_code: None
+                # print("kwargs:", kwargs)
+                # kwargs: {
+                #     '_from_pipeline': 'text-classification',
+                #     'revision': None,
+                #     'token': None,
+                #     '_commit_hash': '714eb0fa89d2f80546fda750413ed43d93601a13',
+                #     '_from_auto': True
+                # }
                 config = AutoConfig.from_pretrained(
                     pretrained_model_name_or_path, trust_remote_code=trust_remote_code, **kwargs
                 )
+                # print("config:", config)
+                # config: DistilBertConfig {
+                # "_name_or_path": "distilbert/distilbert-base-uncased-finetuned-sst-2-english",
+                # "activation": "gelu",
+                # "architectures": [
+                #     "DistilBertForSequenceClassification"
+                # ],
+                # "attention_dropout": 0.1,
+                # "dim": 768,
+                # "dropout": 0.1,
+                # "finetuning_task": "sst-2",
+                # "hidden_dim": 3072,
+                # "id2label": {
+                #     "0": "NEGATIVE",
+                #     "1": "POSITIVE"
+                # },
+                # "initializer_range": 0.02,
+                # "label2id": {
+                #     "NEGATIVE": 0,
+                #     "POSITIVE": 1
+                # },
+                # "max_position_embeddings": 512,
+                # "model_type": "distilbert",
+                # "n_heads": 12,
+                # "n_layers": 6,
+                # "output_past": true,
+                # "pad_token_id": 0,
+                # "qa_dropout": 0.1,
+                # "seq_classif_dropout": 0.2,
+                # "sinusoidal_pos_embds": false,
+                # "tie_weights_": true,
+                # "transformers_version": "4.38.2",
+                # "vocab_size": 30522
+                # }
+
             config_tokenizer_class = config.tokenizer_class
+            # print("config_tokenizer_class:", config_tokenizer_class) # config_tokenizer_class: None
+
             if hasattr(config, "auto_map") and "AutoTokenizer" in config.auto_map:
                 tokenizer_auto_map = config.auto_map["AutoTokenizer"]
+            # print("tokenizer_auto_map:", tokenizer_auto_map) # tokenizer_auto_map: None
 
         has_remote_code = tokenizer_auto_map is not None
+        # print("has_remote_code:", has_remote_code) # has_remote_code: False
+
         has_local_code = type(config) in TOKENIZER_MAPPING or (
             config_tokenizer_class is not None
             and (
@@ -794,9 +941,12 @@ class AutoTokenizer:
                 or tokenizer_class_from_name(config_tokenizer_class + "Fast") is not None
             )
         )
+        # print("has_local_code:", has_local_code) # has_local_code: True
+
         trust_remote_code = resolve_trust_remote_code(
             trust_remote_code, pretrained_model_name_or_path, has_local_code, has_remote_code
         )
+        # print("trust_remote_code:", trust_remote_code) # trust_remote_code: False
 
         if has_remote_code and trust_remote_code:
             if use_fast and tokenizer_auto_map[1] is not None:
@@ -837,9 +987,22 @@ class AutoTokenizer:
             config = config.encoder
 
         model_type = config_class_to_model_type(type(config).__name__)
+        # print("model_type:", model_type) # model_type: distilbert
         if model_type is not None:
             tokenizer_class_py, tokenizer_class_fast = TOKENIZER_MAPPING[type(config)]
+            # print("tokenizer_class_py:", tokenizer_class_py) # tokenizer_class_py: <class 'transformers.models.distilbert.tokenization_distilbert.DistilBertTokenizer'>
+            # print("tokenizer_class_fast:", tokenizer_class_fast) # tokenizer_class_fast: <class 'transformers.models.distilbert.tokenization_distilbert_fast.DistilBertTokenizerFast'>
             if tokenizer_class_fast and (use_fast or tokenizer_class_py is None):
+                # print("pretrained_model_name_or_path:", pretrained_model_name_or_path) # pretrained_model_name_or_path: distilbert/distilbert-base-uncased-finetuned-sst-2-english
+                # print("inputs:", inputs) # inputs: ()
+                # print("kwargs:", kwargs)
+                # kwargs: {
+                #     '_from_pipeline': 'text-classification',
+                #     'revision': None,
+                #     'token': None,
+                #     '_commit_hash': '714eb0fa89d2f80546fda750413ed43d93601a13',
+                #     '_from_auto': True
+                # }
                 return tokenizer_class_fast.from_pretrained(pretrained_model_name_or_path, *inputs, **kwargs)
             else:
                 if tokenizer_class_py is not None:

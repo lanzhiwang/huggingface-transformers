@@ -1091,6 +1091,16 @@ class AutoConfig:
         >>> unused_kwargs
         {'foo': False}
         ```"""
+        # print("pretrained_model_name_or_path:", pretrained_model_name_or_path) # pretrained_model_name_or_path: distilbert/distilbert-base-uncased-finetuned-sst-2-english
+        # print("kwargs:", kwargs)
+        # kwargs: {
+        #     '_from_pipeline': 'text-classification',
+        #     'revision': None,
+        #     'token': None,
+        #     'trust_remote_code': None,
+        #     '_commit_hash': None
+        # }
+
         use_auth_token = kwargs.pop("use_auth_token", None)
         if use_auth_token is not None:
             warnings.warn(
@@ -1109,8 +1119,10 @@ class AutoConfig:
         code_revision = kwargs.pop("code_revision", None)
 
         config_dict, unused_kwargs = PretrainedConfig.get_config_dict(pretrained_model_name_or_path, **kwargs)
+
         has_remote_code = "auto_map" in config_dict and "AutoConfig" in config_dict["auto_map"]
         has_local_code = "model_type" in config_dict and config_dict["model_type"] in CONFIG_MAPPING
+
         trust_remote_code = resolve_trust_remote_code(
             trust_remote_code, pretrained_model_name_or_path, has_local_code, has_remote_code
         )

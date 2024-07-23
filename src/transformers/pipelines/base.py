@@ -226,6 +226,47 @@ def infer_framework_load_model(
     Returns:
         `Tuple`: A tuple framework, model.
     """
+    # print("model:", model) # model: distilbert/distilbert-base-uncased-finetuned-sst-2-english
+    # print("config:", config)
+    # config: DistilBertConfig {
+    #   "_name_or_path": "distilbert/distilbert-base-uncased-finetuned-sst-2-english",
+    #   "activation": "gelu",
+    #   "architectures": [
+    #     "DistilBertForSequenceClassification"
+    #   ],
+    #   "attention_dropout": 0.1,
+    #   "dim": 768,
+    #   "dropout": 0.1,
+    #   "finetuning_task": "sst-2",
+    #   "hidden_dim": 3072,
+    #   "id2label": {
+    #     "0": "NEGATIVE",
+    #     "1": "POSITIVE"
+    #   },
+    #   "initializer_range": 0.02,
+    #   "label2id": {
+    #     "NEGATIVE": 0,
+    #     "POSITIVE": 1
+    #   },
+    #   "max_position_embeddings": 512,
+    #   "model_type": "distilbert",
+    #   "n_heads": 12,
+    #   "n_layers": 6,
+    #   "output_past": true,
+    #   "pad_token_id": 0,
+    #   "qa_dropout": 0.1,
+    #   "seq_classif_dropout": 0.2,
+    #   "sinusoidal_pos_embds": false,
+    #   "tie_weights_": true,
+    #   "transformers_version": "4.38.2",
+    #   "vocab_size": 30522
+    # }
+    # print("model_classes:", model_classes) # model_classes: {'tf': (), 'pt': (<class 'transformers.models.auto.modeling_auto.AutoModelForSequenceClassification'>,)}
+    # print("task:", task) # task: text-classification
+    # print("framework:", framework) # framework: None
+    # print("model_kwargs:", model_kwargs)
+    # model_kwargs: {'revision': None, 'token': None, 'trust_remote_code': None, '_commit_hash': '714eb0fa89d2f80546fda750413ed43d93601a13'}
+
     if not is_tf_available() and not is_torch_available():
         raise RuntimeError(
             "At least one of TensorFlow 2.0 or PyTorch should be installed. "

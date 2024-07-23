@@ -721,11 +721,32 @@ def pipeline(
     >>> tokenizer = AutoTokenizer.from_pretrained("google-bert/bert-base-cased")
     >>> recognizer = pipeline("ner", model=model, tokenizer=tokenizer)
     ```"""
+    # print("task:", task) # task: text-classification
+    # print("model:", model) # model: None
+    # print("config:", config) # config: None
+    # print("tokenizer:", tokenizer) # tokenizer: None
+    # print("feature_extractor:", feature_extractor) # feature_extractor: None
+    # print("image_processor:", image_processor) # image_processor: None
+    # print("framework:", framework) # framework: None
+    # print("revision:", revision) # revision: None
+    # print("use_fast:", use_fast) # use_fast: True
+    # print("token:", token) # token: None
+    # print("device:", device) # device: None
+    # print("device_map:", device_map) # device_map: None
+    # print("torch_dtype:", torch_dtype) # torch_dtype: None
+    # print("trust_remote_code:", trust_remote_code) # trust_remote_code: None
+    # print("model_kwargs:", model_kwargs) # model_kwargs: None
+    # print("pipeline_class:", pipeline_class) # pipeline_class: None
+    # print("kwargs:", kwargs) # kwargs: {}
+
     if model_kwargs is None:
         model_kwargs = {}
+    # print("model_kwargs:", model_kwargs) # model_kwargs: {}
+
     # Make sure we only pass use_auth_token once as a kwarg (it used to be possible to pass it in model_kwargs,
     # this is to keep BC).
     use_auth_token = model_kwargs.pop("use_auth_token", None)
+    # print("use_auth_token:", use_auth_token)# use_auth_token: None
     if use_auth_token is not None:
         warnings.warn(
             "The `use_auth_token` argument is deprecated and will be removed in v5 of Transformers. Please use `token` instead.",
@@ -736,7 +757,9 @@ def pipeline(
         token = use_auth_token
 
     code_revision = kwargs.pop("code_revision", None)
+    # print("code_revision:", code_revision) # code_revision: None
     commit_hash = kwargs.pop("_commit_hash", None)
+    # print("commit_hash:", commit_hash) # commit_hash: None
 
     hub_kwargs = {
         "revision": revision,
@@ -744,6 +767,13 @@ def pipeline(
         "trust_remote_code": trust_remote_code,
         "_commit_hash": commit_hash,
     }
+    # print("hub_kwargs:", hub_kwargs)
+    # hub_kwargs: {
+    #     'revision': None,
+    #     'token': None,
+    #     'trust_remote_code': None,
+    #     '_commit_hash': None
+    # }
 
     if task is None and model is None:
         raise RuntimeError(
@@ -766,6 +796,7 @@ def pipeline(
         )
     if isinstance(model, Path):
         model = str(model)
+    # print("model:", model) # model: None
 
     if commit_hash is None:
         pretrained_model_name_or_path = None
@@ -773,6 +804,7 @@ def pipeline(
             pretrained_model_name_or_path = config
         elif config is None and isinstance(model, str):
             pretrained_model_name_or_path = model
+        # print("pretrained_model_name_or_path:", pretrained_model_name_or_path) # pretrained_model_name_or_path: None
 
         if not isinstance(config, PretrainedConfig) and pretrained_model_name_or_path is not None:
             # We make a call to the config file first (which may be absent) to get the commit hash as soon as possible
@@ -787,6 +819,8 @@ def pipeline(
             hub_kwargs["_commit_hash"] = extract_commit_hash(resolved_config_file, commit_hash)
         else:
             hub_kwargs["_commit_hash"] = getattr(config, "_commit_hash", None)
+    # print("hub_kwargs:", hub_kwargs)
+    # hub_kwargs: {'revision': None, 'token': None, 'trust_remote_code': None, '_commit_hash': None}
 
     # Config is the primordial information item.
     # Instantiate config if needed
@@ -828,6 +862,7 @@ def pipeline(
                     "We can't infer the task automatically for this model as there are multiple tasks available. Pick "
                     f"one in {', '.join(custom_tasks.keys())}"
                 )
+    # print("custom_tasks:", custom_tasks) # custom_tasks: {}
 
     if task is None and model is not None:
         if not isinstance(model, str):
@@ -857,22 +892,88 @@ def pipeline(
             )
     else:
         normalized_task, targeted_task, task_options = check_task(task)
+        # print("normalized_task:", normalized_task) # normalized_task: text-classification
+        # print("targeted_task:", targeted_task)
+        # targeted_task: {
+        #     'impl': <class 'transformers.pipelines.text_classification.TextClassificationPipeline'>,
+        #     'tf': (),
+        #     'pt': (<class 'transformers.models.auto.modeling_auto.AutoModelForSequenceClassification'>,),
+        #     'default': {
+        #         'model': {
+        #             'pt': ('distilbert/distilbert-base-uncased-finetuned-sst-2-english', 'af0f99b'),
+        #             'tf': ('distilbert/distilbert-base-uncased-finetuned-sst-2-english', 'af0f99b')
+        #         }
+        #     },
+        #     'type': 'text'
+        # }
+        # print("task_options:", task_options) # task_options: None
         if pipeline_class is None:
             pipeline_class = targeted_task["impl"]
+        # print("pipeline_class:", pipeline_class) # pipeline_class: <class 'transformers.pipelines.text_classification.TextClassificationPipeline'>
 
     # Use default model/config/tokenizer for the task if no model is provided
     if model is None:
         # At that point framework might still be undetermined
         model, default_revision = get_default_model_and_revision(targeted_task, framework, task_options)
+        # print("model:", model) # model: distilbert/distilbert-base-uncased-finetuned-sst-2-english
+        # print("default_revision:", default_revision) # default_revision: af0f99b
         revision = revision if revision is not None else default_revision
+        # print("revision:", revision) # revision: af0f99b
         logger.warning(
             f"No model was supplied, defaulted to {model} and revision"
             f" {revision} ({HUGGINGFACE_CO_RESOLVE_ENDPOINT}/{model}).\n"
             "Using a pipeline without specifying a model name and revision in production is not recommended."
         )
         if config is None and isinstance(model, str):
+            # print("model:", model) # model: distilbert/distilbert-base-uncased-finetuned-sst-2-english
+            # print("task:", task) # task: text-classification
+            # print("hub_kwargs:", hub_kwargs) # hub_kwargs: {'revision': None, 'token': None, 'trust_remote_code': None, '_commit_hash': None}
+            # print("model_kwargs:", model_kwargs) # model_kwargs: {}
             config = AutoConfig.from_pretrained(model, _from_pipeline=task, **hub_kwargs, **model_kwargs)
+            # print("config:", config)
+            # # 从 https://huggingface.co/distilbert/distilbert-base-uncased-finetuned-sst-2-english 下载 config.json
+            # config: DistilBertConfig {
+            #   "_name_or_path": "distilbert/distilbert-base-uncased-finetuned-sst-2-english",
+            #   "activation": "gelu",
+            #   "architectures": [
+            #     "DistilBertForSequenceClassification"
+            #   ],
+            #   "attention_dropout": 0.1,
+            #   "dim": 768,
+            #   "dropout": 0.1,
+            #   "finetuning_task": "sst-2",
+            #   "hidden_dim": 3072,
+            #   "id2label": {
+            #     "0": "NEGATIVE",
+            #     "1": "POSITIVE"
+            #   },
+            #   "initializer_range": 0.02,
+            #   "label2id": {
+            #     "NEGATIVE": 0,
+            #     "POSITIVE": 1
+            #   },
+            #   "max_position_embeddings": 512,
+            #   "model_type": "distilbert",
+            #   "n_heads": 12,
+            #   "n_layers": 6,
+            #   "output_past": true,
+            #   "pad_token_id": 0,
+            #   "qa_dropout": 0.1,
+            #   "seq_classif_dropout": 0.2,
+            #   "sinusoidal_pos_embds": false,
+            #   "tie_weights_": true,
+            #   "transformers_version": "4.38.2",
+            #   "vocab_size": 30522
+            # }
+
             hub_kwargs["_commit_hash"] = config._commit_hash
+            # print("hub_kwargs:", hub_kwargs)
+            # hub_kwargs: {
+            #     'revision': None,
+            #     'token': None,
+            #     'trust_remote_code': None,
+            #     '_commit_hash': '714eb0fa89d2f80546fda750413ed43d93601a13'
+            # }
 
     if device_map is not None:
         if "device_map" in model_kwargs:
@@ -897,11 +998,68 @@ def pipeline(
         model_kwargs["torch_dtype"] = torch_dtype
 
     model_name = model if isinstance(model, str) else None
+    # print("model_name:", model_name) # model_name: distilbert/distilbert-base-uncased-finetuned-sst-2-english
 
     # Load the correct model if possible
     # Infer the framework from the model if not already defined
     if isinstance(model, str) or framework is None:
         model_classes = {"tf": targeted_task["tf"], "pt": targeted_task["pt"]}
+        # print("model_classes:", model_classes)
+        # model_classes: {
+        #     'tf': (),
+        #     'pt': (<class 'transformers.models.auto.modeling_auto.AutoModelForSequenceClassification'>,)
+        # }
+
+        # print("model:", model) # model: distilbert/distilbert-base-uncased-finetuned-sst-2-english
+        # print("model_classes:", model_classes)
+        # model_classes: {
+        #     'tf': (),
+        #     'pt': (<class 'transformers.models.auto.modeling_auto.AutoModelForSequenceClassification'>,)
+        # }
+        # print("config:", config)
+        # config: DistilBertConfig {
+        #   "_name_or_path": "distilbert/distilbert-base-uncased-finetuned-sst-2-english",
+        #   "activation": "gelu",
+        #   "architectures": [
+        #     "DistilBertForSequenceClassification"
+        #   ],
+        #   "attention_dropout": 0.1,
+        #   "dim": 768,
+        #   "dropout": 0.1,
+        #   "finetuning_task": "sst-2",
+        #   "hidden_dim": 3072,
+        #   "id2label": {
+        #     "0": "NEGATIVE",
+        #     "1": "POSITIVE"
+        #   },
+        #   "initializer_range": 0.02,
+        #   "label2id": {
+        #     "NEGATIVE": 0,
+        #     "POSITIVE": 1
+        #   },
+        #   "max_position_embeddings": 512,
+        #   "model_type": "distilbert",
+        #   "n_heads": 12,
+        #   "n_layers": 6,
+        #   "output_past": true,
+        #   "pad_token_id": 0,
+        #   "qa_dropout": 0.1,
+        #   "seq_classif_dropout": 0.2,
+        #   "sinusoidal_pos_embds": false,
+        #   "tie_weights_": true,
+        #   "transformers_version": "4.38.2",
+        #   "vocab_size": 30522
+        # }
+        # print("framework:", framework) # framework: None
+        # print("task:", task) # task: text-classification
+        # print("hub_kwargs:", hub_kwargs)
+        # hub_kwargs: {
+        #     'revision': None,
+        #     'token': None,
+        #     'trust_remote_code': None,
+        #     '_commit_hash': '714eb0fa89d2f80546fda750413ed43d93601a13'
+        # }
+        # print("model_kwargs:", model_kwargs) # model_kwargs: {}
         framework, model = infer_framework_load_model(
             model,
             model_classes=model_classes,
@@ -911,12 +1069,98 @@ def pipeline(
             **hub_kwargs,
             **model_kwargs,
         )
+        # print("framework:", framework) # framework: pt
+        # print("model:", model)
+        # model.safetensors: 100%
+        # framework: pt
+        # model: DistilBertForSequenceClassification(
+        #   (distilbert): DistilBertModel(
+        #     (embeddings): Embeddings(
+        #       (word_embeddings): Embedding(30522, 768, padding_idx=0)
+        #       (position_embeddings): Embedding(512, 768)
+        #       (LayerNorm): LayerNorm((768,), eps=1e-12, elementwise_affine=True)
+        #       (dropout): Dropout(p=0.1, inplace=False)
+        #     )
+        #     (transformer): Transformer(
+        #       (layer): ModuleList(
+        #         (0-5): 6 x TransformerBlock(
+        #           (attention): MultiHeadSelfAttention(
+        #             (dropout): Dropout(p=0.1, inplace=False)
+        #             (q_lin): Linear(in_features=768, out_features=768, bias=True)
+        #             (k_lin): Linear(in_features=768, out_features=768, bias=True)
+        #             (v_lin): Linear(in_features=768, out_features=768, bias=True)
+        #             (out_lin): Linear(in_features=768, out_features=768, bias=True)
+        #           )
+        #           (sa_layer_norm): LayerNorm((768,), eps=1e-12, elementwise_affine=True)
+        #           (ffn): FFN(
+        #             (dropout): Dropout(p=0.1, inplace=False)
+        #             (lin1): Linear(in_features=768, out_features=3072, bias=True)
+        #             (lin2): Linear(in_features=3072, out_features=768, bias=True)
+        #             (activation): GELUActivation()
+        #           )
+        #           (output_layer_norm): LayerNorm((768,), eps=1e-12, elementwise_affine=True)
+        #         )
+        #       )
+        #     )
+        #   )
+        #   (pre_classifier): Linear(in_features=768, out_features=768, bias=True)
+        #   (classifier): Linear(in_features=768, out_features=2, bias=True)
+        #   (dropout): Dropout(p=0.2, inplace=False)
+        # )
 
     model_config = model.config
+    # print("model_config:", model_config)
+    # model_config: DistilBertConfig {
+    #   "_name_or_path": "distilbert/distilbert-base-uncased-finetuned-sst-2-english",
+    #   "activation": "gelu",
+    #   "architectures": [
+    #     "DistilBertForSequenceClassification"
+    #   ],
+    #   "attention_dropout": 0.1,
+    #   "dim": 768,
+    #   "dropout": 0.1,
+    #   "finetuning_task": "sst-2",
+    #   "hidden_dim": 3072,
+    #   "id2label": {
+    #     "0": "NEGATIVE",
+    #     "1": "POSITIVE"
+    #   },
+    #   "initializer_range": 0.02,
+    #   "label2id": {
+    #     "NEGATIVE": 0,
+    #     "POSITIVE": 1
+    #   },
+    #   "max_position_embeddings": 512,
+    #   "model_type": "distilbert",
+    #   "n_heads": 12,
+    #   "n_layers": 6,
+    #   "output_past": true,
+    #   "pad_token_id": 0,
+    #   "qa_dropout": 0.1,
+    #   "seq_classif_dropout": 0.2,
+    #   "sinusoidal_pos_embds": false,
+    #   "tie_weights_": true,
+    #   "transformers_version": "4.38.2",
+    #   "vocab_size": 30522
+    # }
+
     hub_kwargs["_commit_hash"] = model.config._commit_hash
+    # print("hub_kwargs:", hub_kwargs)
+    # hub_kwargs: {
+    #     'revision': None,
+    #     'token': None,
+    #     'trust_remote_code': None,
+    #     '_commit_hash': '714eb0fa89d2f80546fda750413ed43d93601a13'
+    # }
+
     load_tokenizer = type(model_config) in TOKENIZER_MAPPING or model_config.tokenizer_class is not None
+    # print("load_tokenizer:", load_tokenizer) # load_tokenizer: True
+
     load_feature_extractor = type(model_config) in FEATURE_EXTRACTOR_MAPPING or feature_extractor is not None
+    # print("load_feature_extractor:", load_feature_extractor) # load_feature_extractor: False
+
     load_image_processor = type(model_config) in IMAGE_PROCESSOR_MAPPING or image_processor is not None
+    # print("load_image_processor:", load_image_processor) # load_image_processor: False
 
     # If `model` (instance of `PretrainedModel` instead of `str`) is passed (and/or same for config), while
     # `image_processor` or `feature_extractor` is `None`, the loading will fail. This happens particularly for some
@@ -940,6 +1184,8 @@ def pipeline(
         # so the model_config might not define a tokenizer, but it seems to be
         # necessary for the task, so we're force-trying to load it.
         load_tokenizer = True
+    # print("load_tokenizer:", load_tokenizer) # load_tokenizer: True
+
     if (
         image_processor is None
         and not load_image_processor
@@ -951,6 +1197,8 @@ def pipeline(
         # so the model_config might not define a tokenizer, but it seems to be
         # necessary for the task, so we're force-trying to load it.
         load_image_processor = True
+    # print("load_image_processor:", load_image_processor) # load_image_processor: False
+
     if (
         feature_extractor is None
         and not load_feature_extractor
@@ -962,6 +1210,7 @@ def pipeline(
         # so the model_config might not define a tokenizer, but it seems to be
         # necessary for the task, so we're force-trying to load it.
         load_feature_extractor = True
+    # print("load_feature_extractor:", load_feature_extractor) # load_feature_extractor: False
 
     if task in NO_TOKENIZER_TASKS:
         # These will never require a tokenizer.
@@ -969,11 +1218,15 @@ def pipeline(
         # the files could be missing from the hub, instead of failing
         # on such repos, we just force to not load it.
         load_tokenizer = False
+    # print("load_tokenizer:", load_tokenizer) # load_tokenizer: True
 
     if task in NO_FEATURE_EXTRACTOR_TASKS:
         load_feature_extractor = False
+    # print("load_feature_extractor:", load_feature_extractor) # load_feature_extractor: False
+
     if task in NO_IMAGE_PROCESSOR_TASKS:
         load_image_processor = False
+    # print("load_image_processor:", load_image_processor) # load_image_processor: False
 
     if load_tokenizer:
         # Try to infer tokenizer from model or config name (if provided as str)
@@ -988,6 +1241,7 @@ def pipeline(
                     "Impossible to guess which tokenizer to use. "
                     "Please provide a PreTrainedTokenizer class or a path/identifier to a pretrained tokenizer."
                 )
+        # print("tokenizer:", tokenizer) #tokenizer: distilbert/distilbert-base-uncased-finetuned-sst-2-english
 
         # Instantiate tokenizer if needed
         if isinstance(tokenizer, (str, tuple)):
@@ -1000,10 +1254,36 @@ def pipeline(
                 tokenizer_identifier = tokenizer
                 tokenizer_kwargs = model_kwargs.copy()
                 tokenizer_kwargs.pop("torch_dtype", None)
+            # print("tokenizer_identifier:", tokenizer_identifier) # tokenizer_identifier: distilbert/distilbert-base-uncased-finetuned-sst-2-english
+            # print("tokenizer_kwargs:", tokenizer_kwargs) # tokenizer_kwargs: {}
 
+            # print("tokenizer_identifier:", tokenizer_identifier) # tokenizer_identifier: distilbert/distilbert-base-uncased-finetuned-sst-2-english
+            # print("use_fast:", use_fast) # use_fast: True
+            # print("task:", task) # task: text-classification
+            # print("hub_kwargs:", hub_kwargs) # hub_kwargs: {'revision': None, 'token': None, 'trust_remote_code': None, '_commit_hash': '714eb0fa89d2f80546fda750413ed43d93601a13'}
+            # print("tokenizer_kwargs:", tokenizer_kwargs) # tokenizer_kwargs: {}
             tokenizer = AutoTokenizer.from_pretrained(
                 tokenizer_identifier, use_fast=use_fast, _from_pipeline=task, **hub_kwargs, **tokenizer_kwargs
             )
+            # print("tokenizer:", tokenizer)
+            # tokenizer_config.json
+            # vocab.txt:
+            # tokenizer: DistilBertTokenizerFast(
+            #     name_or_path='distilbert/distilbert-base-uncased-finetuned-sst-2-english',
+            #     vocab_size=30522,
+            #     model_max_length=512,
+            #     is_fast=True,
+            #     padding_side='right',
+            #     truncation_side='right',
+            #     special_tokens={'unk_token': '[UNK]', 'sep_token': '[SEP]', 'pad_token': '[PAD]', 'cls_token': '[CLS]', 'mask_token': '[MASK]'},
+            #     clean_up_tokenization_spaces=True
+            # ), added_tokens_decoder={
+            #     0: AddedToken("[PAD]", rstrip=False, lstrip=False, single_word=False, normalized=False, special=True),
+            #     100: AddedToken("[UNK]", rstrip=False, lstrip=False, single_word=False, normalized=False, special=True),
+            #     101: AddedToken("[CLS]", rstrip=False, lstrip=False, single_word=False, normalized=False, special=True),
+            #     102: AddedToken("[SEP]", rstrip=False, lstrip=False, single_word=False, normalized=False, special=True),
+            #     103: AddedToken("[MASK]", rstrip=False, lstrip=False, single_word=False, normalized=False, special=True),
+            # }
 
     if load_image_processor:
         # Try to infer image processor from model or config name (if provided as str)
@@ -1104,4 +1384,64 @@ def pipeline(
     if device is not None:
         kwargs["device"] = device
 
+    # print("model:", model)
+    # model: DistilBertForSequenceClassification(
+    #   (distilbert): DistilBertModel(
+    #     (embeddings): Embeddings(
+    #       (word_embeddings): Embedding(30522, 768, padding_idx=0)
+    #       (position_embeddings): Embedding(512, 768)
+    #       (LayerNorm): LayerNorm((768,), eps=1e-12, elementwise_affine=True)
+    #       (dropout): Dropout(p=0.1, inplace=False)
+    #     )
+    #     (transformer): Transformer(
+    #       (layer): ModuleList(
+    #         (0-5): 6 x TransformerBlock(
+    #           (attention): MultiHeadSelfAttention(
+    #             (dropout): Dropout(p=0.1, inplace=False)
+    #             (q_lin): Linear(in_features=768, out_features=768, bias=True)
+    #             (k_lin): Linear(in_features=768, out_features=768, bias=True)
+    #             (v_lin): Linear(in_features=768, out_features=768, bias=True)
+    #             (out_lin): Linear(in_features=768, out_features=768, bias=True)
+    #           )
+    #           (sa_layer_norm): LayerNorm((768,), eps=1e-12, elementwise_affine=True)
+    #           (ffn): FFN(
+    #             (dropout): Dropout(p=0.1, inplace=False)
+    #             (lin1): Linear(in_features=768, out_features=3072, bias=True)
+    #             (lin2): Linear(in_features=3072, out_features=768, bias=True)
+    #             (activation): GELUActivation()
+    #           )
+    #           (output_layer_norm): LayerNorm((768,), eps=1e-12, elementwise_affine=True)
+    #         )
+    #       )
+    #     )
+    #   )
+    #   (pre_classifier): Linear(in_features=768, out_features=768, bias=True)
+    #   (classifier): Linear(in_features=768, out_features=2, bias=True)
+    #   (dropout): Dropout(p=0.2, inplace=False)
+    # )
+    # print("framework:", framework) # framework: pt
+    # print("task:", task) # task: text-classification
+    # print("kwargs:", kwargs)
+    # kwargs: {
+    #     'tokenizer':
+    #         DistilBertTokenizerFast(
+    #             name_or_path='distilbert/distilbert-base-uncased-finetuned-sst-2-english',
+    #             vocab_size=30522,
+    #             model_max_length=512,
+    #             is_fast=True,
+    #             padding_side='right',
+    #             truncation_side='right',
+    #             special_tokens={'unk_token': '[UNK]', 'sep_token': '[SEP]', 'pad_token': '[PAD]', 'cls_token': '[CLS]', 'mask_token': '[MASK]'},
+    #             clean_up_tokenization_spaces=True
+    #         ),
+    #         added_tokens_decoder={
+    #             0: AddedToken("[PAD]", rstrip=False, lstrip=False, single_word=False, normalized=False, special=True),
+    #             100: AddedToken("[UNK]", rstrip=False, lstrip=False, single_word=False, normalized=False, special=True),
+    #             101: AddedToken("[CLS]", rstrip=False, lstrip=False, single_word=False, normalized=False, special=True),
+    #             102: AddedToken("[SEP]", rstrip=False, lstrip=False, single_word=False, normalized=False, special=True),
+    #             103: AddedToken("[MASK]", rstrip=False, lstrip=False, single_word=False, normalized=False, special=True),
+    #         }
+    # }
+    # print("pipeline_class:", pipeline_class)
+    # pipeline_class: <class 'transformers.pipelines.text_classification.TextClassificationPipeline'>
     return pipeline_class(model=model, framework=framework, task=task, **kwargs)

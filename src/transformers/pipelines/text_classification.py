@@ -80,6 +80,48 @@ class TextClassificationPipeline(Pipeline):
     function_to_apply = ClassificationFunction.NONE
 
     def __init__(self, **kwargs):
+        # print("kwargs:", kwargs)
+        # kwargs: {'model': DistilBertForSequenceClassification(
+        #   (distilbert): DistilBertModel(
+        #     (embeddings): Embeddings(
+        #       (word_embeddings): Embedding(30522, 768, padding_idx=0)
+        #       (position_embeddings): Embedding(512, 768)
+        #       (LayerNorm): LayerNorm((768,), eps=1e-12, elementwise_affine=True)
+        #       (dropout): Dropout(p=0.1, inplace=False)
+        #     )
+        #     (transformer): Transformer(
+        #       (layer): ModuleList(
+        #         (0-5): 6 x TransformerBlock(
+        #           (attention): MultiHeadSelfAttention(
+        #             (dropout): Dropout(p=0.1, inplace=False)
+        #             (q_lin): Linear(in_features=768, out_features=768, bias=True)
+        #             (k_lin): Linear(in_features=768, out_features=768, bias=True)
+        #             (v_lin): Linear(in_features=768, out_features=768, bias=True)
+        #             (out_lin): Linear(in_features=768, out_features=768, bias=True)
+        #           )
+        #           (sa_layer_norm): LayerNorm((768,), eps=1e-12, elementwise_affine=True)
+        #           (ffn): FFN(
+        #             (dropout): Dropout(p=0.1, inplace=False)
+        #             (lin1): Linear(in_features=768, out_features=3072, bias=True)
+        #             (lin2): Linear(in_features=3072, out_features=768, bias=True)
+        #             (activation): GELUActivation()
+        #           )
+        #           (output_layer_norm): LayerNorm((768,), eps=1e-12, elementwise_affine=True)
+        #         )
+        #       )
+        #     )
+        #   )
+        #   (pre_classifier): Linear(in_features=768, out_features=768, bias=True)
+        #   (classifier): Linear(in_features=768, out_features=2, bias=True)
+        #   (dropout): Dropout(p=0.2, inplace=False)
+        # ), 'framework': 'pt', 'task': 'text-classification', 'tokenizer': DistilBertTokenizerFast(name_or_path='distilbert/distilbert-base-uncased-finetuned-sst-2-english', vocab_size=30522, model_max_length=512, is_fast=True, padding_side='right', truncation_side='right', special_tokens={'unk_token': '[UNK]', 'sep_token': '[SEP]', 'pad_token': '[PAD]', 'cls_token': '[CLS]', 'mask_token': '[MASK]'}, clean_up_tokenization_spaces=True),  added_tokens_decoder={
+        #         0: AddedToken("[PAD]", rstrip=False, lstrip=False, single_word=False, normalized=False, special=True),
+        #         100: AddedToken("[UNK]", rstrip=False, lstrip=False, single_word=False, normalized=False, special=True),
+        #         101: AddedToken("[CLS]", rstrip=False, lstrip=False, single_word=False, normalized=False, special=True),
+        #         102: AddedToken("[SEP]", rstrip=False, lstrip=False, single_word=False, normalized=False, special=True),
+        #         103: AddedToken("[MASK]", rstrip=False, lstrip=False, single_word=False, normalized=False, special=True),
+        # }}
+
         super().__init__(**kwargs)
 
         self.check_model_type(
