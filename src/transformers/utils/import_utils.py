@@ -1129,11 +1129,7 @@ def is_mlx_available():
 
 
 def is_tiktoken_available():
-    return _tiktoken_available
-
-
-def is_blobfile_available():
-    return _blobfile_available
+    return _tiktoken_available and _blobfile_available
 
 
 # docstyle-ignore
