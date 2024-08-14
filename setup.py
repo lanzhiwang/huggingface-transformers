@@ -77,6 +77,9 @@ from setuptools import Command, find_packages, setup
 
 # Remove stale transformers.egg-info directory to avoid https://github.com/pypa/pip/issues/5466
 stale_egg_info = Path(__file__).parent / "transformers.egg-info"
+# print("stale_egg_info:", stale_egg_info)
+# stale_egg_info: /workspaces/huggingface-transformers/transformers.egg-info
+
 if stale_egg_info.exists():
     print(
         (
@@ -185,7 +188,23 @@ _deps = [
     "urllib3<2.0.0",
     "uvicorn",
 ]
-
+# print("_deps:", _deps)
+# _deps: [
+#     'Pillow>=10.0.1,<=15.0', 'accelerate>=0.21.0', 'av==9.2.0', 'beautifulsoup4', 'codecarbon==1.2.0', 'cookiecutter==1.7.3',
+#     'dataclasses', 'datasets!=2.5.0', 'decord==0.6.0', 'deepspeed>=0.9.3', 'diffusers', 'dill<0.3.5', 'evaluate>=0.2.0', 'faiss-cpu',
+#     'fastapi', 'filelock', 'flax>=0.4.1,<=0.7.0', 'fsspec<2023.10.0', 'ftfy', 'fugashi>=1.0', 'GitPython<3.1.19',
+#     'hf-doc-builder>=0.3.0', 'huggingface-hub>=0.19.3,<1.0', 'importlib_metadata', 'ipadic>=1.0.0,<2.0', 'isort>=5.5.4',
+#     'jax>=0.4.1,<=0.4.13', 'jaxlib>=0.4.1,<=0.4.13', 'jieba', 'kenlm', 'keras<2.16', 'keras-nlp>=0.3.1', 'librosa', 'nltk',
+#     'natten>=0.14.6,<0.15.0', 'numpy>=1.17', 'onnxconverter-common', 'onnxruntime-tools>=1.4.2', 'onnxruntime>=1.4.0',
+#     'opencv-python', 'optuna', 'optax>=0.0.8,<=0.1.4', 'packaging>=20.0', 'parameterized', 'phonemizer', 'protobuf', 'psutil',
+#     'pyyaml>=5.1', 'pydantic', 'pytest>=7.2.0,<8.0.0', 'pytest-timeout', 'pytest-xdist', 'python>=3.8.0', 'ray[tune]>=2.7.0',
+#     'regex!=2019.12.17', 'requests', 'rhoknp>=1.1.0,<1.3.1', 'rjieba', 'rouge-score!=0.0.7,!=0.0.8,!=0.1,!=0.1.1', 'ruff==0.1.5',
+#     'sacrebleu>=1.4.12,<2.0.0', 'sacremoses', 'safetensors>=0.4.1', 'sagemaker>=2.31.0', 'scikit-learn',
+#     'sentencepiece>=0.1.91,!=0.1.92', 'sigopt', 'starlette', 'sudachipy>=0.6.6', 'sudachidict_core>=20220729', 'tensorboard',
+#     'tensorflow-cpu>=2.6,<2.16', 'tensorflow>=2.6,<2.16', 'tensorflow-text<2.16', 'tf2onnx', 'timeout-decorator', 'timm',
+#     'tokenizers>=0.14,<0.19', 'torch', 'torchaudio', 'torchvision', 'pyctcdecode>=0.4.0', 'tqdm>=4.27', 'unidic>=1.0.2',
+#     'unidic_lite>=1.0.7', 'urllib3<2.0.0', 'uvicorn'
+# ]
 
 # this is a lookup table with items like:
 #
@@ -194,6 +213,32 @@ _deps = [
 #
 # some of the values are versioned whereas others aren't.
 deps = {b: a for a, b in (re.findall(r"^(([^!=<>~ ]+)(?:[!=<>~ ].*)?$)", x)[0] for x in _deps)}
+# print("deps:", deps)
+# deps: {
+#     'Pillow': 'Pillow>=10.0.1,<=15.0', 'accelerate': 'accelerate>=0.21.0', 'av': 'av==9.2.0', 'beautifulsoup4': 'beautifulsoup4',
+#     'codecarbon': 'codecarbon==1.2.0', 'cookiecutter': 'cookiecutter==1.7.3', 'dataclasses': 'dataclasses',
+#     'datasets': 'datasets!=2.5.0', 'decord': 'decord==0.6.0', 'deepspeed': 'deepspeed>=0.9.3', 'diffusers': 'diffusers',
+#     'dill': 'dill<0.3.5', 'evaluate': 'evaluate>=0.2.0', 'faiss-cpu': 'faiss-cpu', 'fastapi': 'fastapi', 'filelock': 'filelock',
+#     'flax': 'flax>=0.4.1,<=0.7.0', 'fsspec': 'fsspec<2023.10.0', 'ftfy': 'ftfy', 'fugashi': 'fugashi>=1.0',
+#     'GitPython': 'GitPython<3.1.19', 'hf-doc-builder': 'hf-doc-builder>=0.3.0', 'huggingface-hub': 'huggingface-hub>=0.19.3,<1.0',
+#     'importlib_metadata': 'importlib_metadata', 'ipadic': 'ipadic>=1.0.0,<2.0', 'isort': 'isort>=5.5.4', 'jax': 'jax>=0.4.1,<=0.4.13',
+#     'jaxlib': 'jaxlib>=0.4.1,<=0.4.13', 'jieba': 'jieba', 'kenlm': 'kenlm', 'keras': 'keras<2.16', 'keras-nlp': 'keras-nlp>=0.3.1',
+#     'librosa': 'librosa', 'nltk': 'nltk', 'natten': 'natten>=0.14.6,<0.15.0', 'numpy': 'numpy>=1.17',
+#     'onnxconverter-common': 'onnxconverter-common', 'onnxruntime-tools': 'onnxruntime-tools>=1.4.2',
+#     'onnxruntime': 'onnxruntime>=1.4.0', 'opencv-python': 'opencv-python', 'optuna': 'optuna', 'optax': 'optax>=0.0.8,<=0.1.4',
+#     'packaging': 'packaging>=20.0', 'parameterized': 'parameterized', 'phonemizer': 'phonemizer', 'protobuf': 'protobuf',
+#     'psutil': 'psutil', 'pyyaml': 'pyyaml>=5.1', 'pydantic': 'pydantic', 'pytest': 'pytest>=7.2.0,<8.0.0',
+#     'pytest-timeout': 'pytest-timeout', 'pytest-xdist': 'pytest-xdist', 'python': 'python>=3.8.0', 'ray[tune]': 'ray[tune]>=2.7.0',
+#     'regex': 'regex!=2019.12.17', 'requests': 'requests', 'rhoknp': 'rhoknp>=1.1.0,<1.3.1', 'rjieba': 'rjieba',
+#     'rouge-score': 'rouge-score!=0.0.7,!=0.0.8,!=0.1,!=0.1.1', 'ruff': 'ruff==0.1.5', 'sacrebleu': 'sacrebleu>=1.4.12,<2.0.0',
+#     'sacremoses': 'sacremoses', 'safetensors': 'safetensors>=0.4.1', 'sagemaker': 'sagemaker>=2.31.0', 'scikit-learn': 'scikit-learn',
+#     'sentencepiece': 'sentencepiece>=0.1.91,!=0.1.92', 'sigopt': 'sigopt', 'starlette': 'starlette', 'sudachipy': 'sudachipy>=0.6.6',
+#     'sudachidict_core': 'sudachidict_core>=20220729', 'tensorboard': 'tensorboard', 'tensorflow-cpu': 'tensorflow-cpu>=2.6,<2.16',
+#     'tensorflow': 'tensorflow>=2.6,<2.16', 'tensorflow-text': 'tensorflow-text<2.16', 'tf2onnx': 'tf2onnx',
+#     'timeout-decorator': 'timeout-decorator', 'timm': 'timm', 'tokenizers': 'tokenizers>=0.14,<0.19', 'torch': 'torch',
+#     'torchaudio': 'torchaudio', 'torchvision': 'torchvision', 'pyctcdecode': 'pyctcdecode>=0.4.0', 'tqdm': 'tqdm>=4.27',
+#     'unidic': 'unidic>=1.0.2', 'unidic_lite': 'unidic_lite>=1.0.7', 'urllib3': 'urllib3<2.0.0', 'uvicorn': 'uvicorn'
+# }
 
 # since we save this data in src/transformers/dependency_versions_table.py it can be easily accessed from
 # anywhere. If you need to quickly access the data from this table in a shell, you can do so easily with:
@@ -411,6 +456,53 @@ extras["torchhub"] = deps_list(
 extras["agents"] = deps_list(
     "diffusers", "accelerate", "datasets", "torch", "sentencepiece", "opencv-python", "Pillow"
 )
+# print("extras:", extras)
+# extras: {
+#     'ja': ['fugashi>=1.0', 'ipadic>=1.0.0,<2.0', 'unidic_lite>=1.0.7', 'unidic>=1.0.2', 'sudachipy>=0.6.6', 'sudachidict_core>=20220729', 'rhoknp>=1.1.0,<1.3.1'],
+#     'sklearn': ['scikit-learn'],
+#     'tf': ['tensorflow>=2.6,<2.16', 'onnxconverter-common', 'tf2onnx', 'tensorflow-text<2.16', 'keras-nlp>=0.3.1'],
+#     'tf-cpu': ['tensorflow-cpu>=2.6,<2.16', 'onnxconverter-common', 'tf2onnx', 'tensorflow-text<2.16', 'keras-nlp>=0.3.1'],
+#     'torch': ['torch', 'accelerate>=0.21.0'],
+#     'accelerate': ['accelerate>=0.21.0'],
+#     'retrieval': ['faiss-cpu', 'datasets!=2.5.0'],
+#     'flax': ['jax>=0.4.1,<=0.4.13', 'jaxlib>=0.4.1,<=0.4.13', 'flax>=0.4.1,<=0.7.0', 'optax>=0.0.8,<=0.1.4'],
+#     'tokenizers': ['tokenizers>=0.14,<0.19'],
+#     'ftfy': ['ftfy'],
+#     'onnxruntime': ['onnxruntime>=1.4.0', 'onnxruntime-tools>=1.4.2'],
+#     'onnx': ['onnxconverter-common', 'tf2onnx', 'onnxruntime>=1.4.0', 'onnxruntime-tools>=1.4.2'],
+#     'modelcreation': ['cookiecutter==1.7.3'],
+#     'sagemaker': ['sagemaker>=2.31.0'],
+#     'deepspeed': ['deepspeed>=0.9.3', 'accelerate>=0.21.0'],
+#     'optuna': ['optuna'],
+#     'ray': ['ray[tune]>=2.7.0'],
+#     'sigopt': ['sigopt'],
+#     'integrations': ['optuna', 'ray[tune]>=2.7.0', 'sigopt'],
+#     'serving': ['pydantic', 'uvicorn', 'fastapi', 'starlette'],
+#     'audio': ['librosa', 'pyctcdecode>=0.4.0', 'phonemizer', 'kenlm'],
+#     'speech': ['torchaudio', 'librosa', 'pyctcdecode>=0.4.0', 'phonemizer', 'kenlm'],
+#     'torch-speech': ['torchaudio', 'librosa', 'pyctcdecode>=0.4.0', 'phonemizer', 'kenlm'],
+#     'tf-speech': ['librosa', 'pyctcdecode>=0.4.0', 'phonemizer', 'kenlm'],
+#     'flax-speech': ['librosa', 'pyctcdecode>=0.4.0', 'phonemizer', 'kenlm'],
+#     'vision': ['Pillow>=10.0.1,<=15.0'],
+#     'timm': ['timm'],
+#     'torch-vision': ['torchvision', 'Pillow>=10.0.1,<=15.0'],
+#     'natten': ['natten>=0.14.6,<0.15.0'],
+#     'codecarbon': ['codecarbon==1.2.0'],
+#     'video': ['decord==0.6.0', 'av==9.2.0'],
+#     'sentencepiece': ['sentencepiece>=0.1.91,!=0.1.92', 'protobuf'],
+#     'testing': ['pytest>=7.2.0,<8.0.0', 'pytest-xdist', 'timeout-decorator', 'parameterized', 'psutil', 'datasets!=2.5.0', 'dill<0.3.5', 'evaluate>=0.2.0', 'pytest-timeout', 'ruff==0.1.5', 'sacrebleu>=1.4.12,<2.0.0', 'rouge-score!=0.0.7,!=0.0.8,!=0.1,!=0.1.1', 'nltk', 'GitPython<3.1.19', 'hf-doc-builder>=0.3.0', 'protobuf', 'sacremoses', 'rjieba', 'beautifulsoup4', 'tensorboard', 'pydantic', 'faiss-cpu', 'datasets!=2.5.0', 'cookiecutter==1.7.3'],
+#     'deepspeed-testing': ['deepspeed>=0.9.3', 'accelerate>=0.21.0', 'pytest>=7.2.0,<8.0.0', 'pytest-xdist', 'timeout-decorator', 'parameterized', 'psutil', 'datasets!=2.5.0', 'dill<0.3.5', 'evaluate>=0.2.0', 'pytest-timeout', 'ruff==0.1.5', 'sacrebleu>=1.4.12,<2.0.0', 'rouge-score!=0.0.7,!=0.0.8,!=0.1,!=0.1.1', 'nltk', 'GitPython<3.1.19', 'hf-doc-builder>=0.3.0', 'protobuf', 'sacremoses', 'rjieba', 'beautifulsoup4', 'tensorboard', 'pydantic', 'faiss-cpu', 'datasets!=2.5.0', 'cookiecutter==1.7.3', 'optuna', 'sentencepiece>=0.1.91,!=0.1.92', 'protobuf'],
+#     'quality': ['datasets!=2.5.0', 'isort>=5.5.4', 'ruff==0.1.5', 'GitPython<3.1.19', 'hf-doc-builder>=0.3.0', 'urllib3<2.0.0'],
+#     'all': ['tensorflow>=2.6,<2.16', 'onnxconverter-common', 'tf2onnx', 'tensorflow-text<2.16', 'keras-nlp>=0.3.1', 'torch', 'accelerate>=0.21.0', 'jax>=0.4.1,<=0.4.13', 'jaxlib>=0.4.1,<=0.4.13', 'flax>=0.4.1,<=0.7.0', 'optax>=0.0.8,<=0.1.4', 'sentencepiece>=0.1.91,!=0.1.92', 'protobuf', 'tokenizers>=0.14,<0.19', 'torchaudio', 'librosa', 'pyctcdecode>=0.4.0', 'phonemizer', 'kenlm', 'Pillow>=10.0.1,<=15.0', 'optuna', 'ray[tune]>=2.7.0', 'sigopt', 'timm', 'torchvision', 'Pillow>=10.0.1,<=15.0', 'codecarbon==1.2.0', 'accelerate>=0.21.0', 'decord==0.6.0', 'av==9.2.0'],
+#     'docs_specific': ['hf-doc-builder'],
+#     'docs': ['tensorflow>=2.6,<2.16', 'onnxconverter-common', 'tf2onnx', 'tensorflow-text<2.16', 'keras-nlp>=0.3.1', 'torch', 'accelerate>=0.21.0', 'jax>=0.4.1,<=0.4.13', 'jaxlib>=0.4.1,<=0.4.13', 'flax>=0.4.1,<=0.7.0', 'optax>=0.0.8,<=0.1.4', 'sentencepiece>=0.1.91,!=0.1.92', 'protobuf', 'tokenizers>=0.14,<0.19', 'torchaudio', 'librosa', 'pyctcdecode>=0.4.0', 'phonemizer', 'kenlm', 'Pillow>=10.0.1,<=15.0', 'optuna', 'ray[tune]>=2.7.0', 'sigopt', 'timm', 'torchvision', 'Pillow>=10.0.1,<=15.0', 'codecarbon==1.2.0', 'accelerate>=0.21.0', 'decord==0.6.0', 'av==9.2.0', 'hf-doc-builder'],
+#     'dev-torch': ['pytest>=7.2.0,<8.0.0', 'pytest-xdist', 'timeout-decorator', 'parameterized', 'psutil', 'datasets!=2.5.0', 'dill<0.3.5', 'evaluate>=0.2.0', 'pytest-timeout', 'ruff==0.1.5', 'sacrebleu>=1.4.12,<2.0.0', 'rouge-score!=0.0.7,!=0.0.8,!=0.1,!=0.1.1', 'nltk', 'GitPython<3.1.19', 'hf-doc-builder>=0.3.0', 'protobuf', 'sacremoses', 'rjieba', 'beautifulsoup4', 'tensorboard', 'pydantic', 'faiss-cpu', 'datasets!=2.5.0', 'cookiecutter==1.7.3', 'torch', 'accelerate>=0.21.0', 'sentencepiece>=0.1.91,!=0.1.92', 'protobuf', 'tokenizers>=0.14,<0.19', 'torchaudio', 'librosa', 'pyctcdecode>=0.4.0', 'phonemizer', 'kenlm', 'Pillow>=10.0.1,<=15.0', 'optuna', 'ray[tune]>=2.7.0', 'sigopt', 'timm', 'torchvision', 'Pillow>=10.0.1,<=15.0', 'codecarbon==1.2.0', 'datasets!=2.5.0', 'isort>=5.5.4', 'ruff==0.1.5', 'GitPython<3.1.19', 'hf-doc-builder>=0.3.0', 'urllib3<2.0.0', 'fugashi>=1.0', 'ipadic>=1.0.0,<2.0', 'unidic_lite>=1.0.7', 'unidic>=1.0.2', 'sudachipy>=0.6.6', 'sudachidict_core>=20220729', 'rhoknp>=1.1.0,<1.3.1', 'hf-doc-builder', 'scikit-learn', 'cookiecutter==1.7.3', 'onnxruntime>=1.4.0', 'onnxruntime-tools>=1.4.2'],
+#     'dev-tensorflow': ['pytest>=7.2.0,<8.0.0', 'pytest-xdist', 'timeout-decorator', 'parameterized', 'psutil', 'datasets!=2.5.0', 'dill<0.3.5', 'evaluate>=0.2.0', 'pytest-timeout', 'ruff==0.1.5', 'sacrebleu>=1.4.12,<2.0.0', 'rouge-score!=0.0.7,!=0.0.8,!=0.1,!=0.1.1', 'nltk', 'GitPython<3.1.19', 'hf-doc-builder>=0.3.0', 'protobuf', 'sacremoses', 'rjieba', 'beautifulsoup4', 'tensorboard', 'pydantic', 'faiss-cpu', 'datasets!=2.5.0', 'cookiecutter==1.7.3', 'tensorflow>=2.6,<2.16', 'onnxconverter-common', 'tf2onnx', 'tensorflow-text<2.16', 'keras-nlp>=0.3.1', 'sentencepiece>=0.1.91,!=0.1.92', 'protobuf', 'tokenizers>=0.14,<0.19', 'Pillow>=10.0.1,<=15.0', 'datasets!=2.5.0', 'isort>=5.5.4', 'ruff==0.1.5', 'GitPython<3.1.19', 'hf-doc-builder>=0.3.0', 'urllib3<2.0.0', 'hf-doc-builder', 'scikit-learn', 'cookiecutter==1.7.3', 'onnxconverter-common', 'tf2onnx', 'onnxruntime>=1.4.0', 'onnxruntime-tools>=1.4.2', 'librosa', 'pyctcdecode>=0.4.0', 'phonemizer', 'kenlm'],
+#     'dev': ['tensorflow>=2.6,<2.16', 'onnxconverter-common', 'tf2onnx', 'tensorflow-text<2.16', 'keras-nlp>=0.3.1', 'torch', 'accelerate>=0.21.0', 'jax>=0.4.1,<=0.4.13', 'jaxlib>=0.4.1,<=0.4.13', 'flax>=0.4.1,<=0.7.0', 'optax>=0.0.8,<=0.1.4', 'sentencepiece>=0.1.91,!=0.1.92', 'protobuf', 'tokenizers>=0.14,<0.19', 'torchaudio', 'librosa', 'pyctcdecode>=0.4.0', 'phonemizer', 'kenlm', 'Pillow>=10.0.1,<=15.0', 'optuna', 'ray[tune]>=2.7.0', 'sigopt', 'timm', 'torchvision', 'Pillow>=10.0.1,<=15.0', 'codecarbon==1.2.0', 'accelerate>=0.21.0', 'decord==0.6.0', 'av==9.2.0', 'pytest>=7.2.0,<8.0.0', 'pytest-xdist', 'timeout-decorator', 'parameterized', 'psutil', 'datasets!=2.5.0', 'dill<0.3.5', 'evaluate>=0.2.0', 'pytest-timeout', 'ruff==0.1.5', 'sacrebleu>=1.4.12,<2.0.0', 'rouge-score!=0.0.7,!=0.0.8,!=0.1,!=0.1.1', 'nltk', 'GitPython<3.1.19', 'hf-doc-builder>=0.3.0', 'protobuf', 'sacremoses', 'rjieba', 'beautifulsoup4', 'tensorboard', 'pydantic', 'faiss-cpu', 'datasets!=2.5.0', 'cookiecutter==1.7.3', 'datasets!=2.5.0', 'isort>=5.5.4', 'ruff==0.1.5', 'GitPython<3.1.19', 'hf-doc-builder>=0.3.0', 'urllib3<2.0.0', 'fugashi>=1.0', 'ipadic>=1.0.0,<2.0', 'unidic_lite>=1.0.7', 'unidic>=1.0.2', 'sudachipy>=0.6.6', 'sudachidict_core>=20220729', 'rhoknp>=1.1.0,<1.3.1', 'hf-doc-builder', 'scikit-learn', 'cookiecutter==1.7.3'],
+#     'torchhub': ['filelock', 'huggingface-hub>=0.19.3,<1.0', 'importlib_metadata', 'numpy>=1.17', 'packaging>=20.0', 'protobuf', 'regex!=2019.12.17', 'requests', 'sentencepiece>=0.1.91,!=0.1.92', 'torch', 'tokenizers>=0.14,<0.19', 'tqdm>=4.27'],
+#     'agents': ['diffusers', 'accelerate>=0.21.0', 'datasets!=2.5.0', 'torch', 'sentencepiece>=0.1.91,!=0.1.92', 'opencv-python', 'Pillow>=10.0.1,<=15.0']
+# }
+
 
 # when modifying the following list, make sure to update src/transformers/dependency_versions_check.py
 install_requires = [
@@ -425,6 +517,9 @@ install_requires = [
     deps["safetensors"],
     deps["tqdm"],  # progress bars in model download and training scripts
 ]
+# print("install_requires:", install_requires)
+# install_requires: ['filelock', 'huggingface-hub>=0.19.3,<1.0', 'numpy>=1.17', 'packaging>=20.0', 'pyyaml>=5.1', 'regex!=2019.12.17', 'requests', 'tokenizers>=0.14,<0.19', 'safetensors>=0.4.1', 'tqdm>=4.27']
+
 
 setup(
     name="transformers",

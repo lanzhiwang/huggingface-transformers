@@ -9,6 +9,9 @@ python -m venv .env
 source .env/bin/activate
 pip install -e .
 pip install 'transformers[torch]'
+pip install 'transformers[testing]'
+pip install 'transformers[dev]'
+
 
 >>> from transformers import pipeline
 >>> pipe = pipeline("text-classification")
