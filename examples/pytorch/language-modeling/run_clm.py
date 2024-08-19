@@ -64,8 +64,9 @@ logger = logging.getLogger(__name__)
 
 
 MODEL_CONFIG_CLASSES = list(MODEL_FOR_CAUSAL_LM_MAPPING.keys())
+print("MODEL_CONFIG_CLASSES:", MODEL_CONFIG_CLASSES)
 MODEL_TYPES = tuple(conf.model_type for conf in MODEL_CONFIG_CLASSES)
-
+print("MODEL_TYPES:", MODEL_TYPES)
 
 @dataclass
 class ModelArguments:
@@ -73,6 +74,7 @@ class ModelArguments:
     Arguments pertaining to which model/config/tokenizer we are going to fine-tune, or train from scratch.
     """
 
+    # 如果是模型名称，那么会自动从 huggingface 上下载
     model_name_or_path: Optional[str] = field(
         default=None,
         metadata={
@@ -170,6 +172,7 @@ class DataTrainingArguments:
     Arguments pertaining to what data we are going to input our model for training and eval.
     """
 
+    # 如果是数据名称，那么会自动从 huggingface 上下载
     dataset_name: Optional[str] = field(
         default=None, metadata={"help": "The name of the dataset to use (via the datasets library)."}
     )
@@ -254,6 +257,9 @@ def main():
         model_args, data_args, training_args = parser.parse_json_file(json_file=os.path.abspath(sys.argv[1]))
     else:
         model_args, data_args, training_args = parser.parse_args_into_dataclasses()
+    print("model_args:", model_args)
+    print("data_args:", data_args)
+    print("training_args:", training_args)
 
     if model_args.use_auth_token is not None:
         warnings.warn(
@@ -405,7 +411,9 @@ def main():
     if model_args.config_name:
         config = AutoConfig.from_pretrained(model_args.config_name, **config_kwargs)
     elif model_args.model_name_or_path:
+        print("config_kwargs:", config_kwargs)
         config = AutoConfig.from_pretrained(model_args.model_name_or_path, **config_kwargs)
+        print("config:", config)
     else:
         config = CONFIG_MAPPING[model_args.model_type]()
         logger.warning("You are instantiating a new config instance from scratch.")
@@ -424,7 +432,9 @@ def main():
     if model_args.tokenizer_name:
         tokenizer = AutoTokenizer.from_pretrained(model_args.tokenizer_name, **tokenizer_kwargs)
     elif model_args.model_name_or_path:
+        print("tokenizer_kwargs:", tokenizer_kwargs)
         tokenizer = AutoTokenizer.from_pretrained(model_args.model_name_or_path, **tokenizer_kwargs)
+        print("tokenizer:", tokenizer)
     else:
         raise ValueError(
             "You are instantiating a new tokenizer from scratch. This is not supported by this script. "
@@ -448,6 +458,7 @@ def main():
             torch_dtype=torch_dtype,
             low_cpu_mem_usage=model_args.low_cpu_mem_usage,
         )
+        print("model:", model)
     else:
         model = AutoModelForCausalLM.from_config(config, trust_remote_code=model_args.trust_remote_code)
         n_params = sum({p.data_ptr(): p.numel() for p in model.parameters()}.values())
