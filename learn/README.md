@@ -5,6 +5,8 @@ docker run -ti --rm \
 docker-mirrors.alauda.cn/library/python:3.10.12-bullseye \
 bash
 
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple yapf
+
 python -m venv .env
 source .env/bin/activate
 pip install -e .
@@ -16,6 +18,5 @@ pip install 'transformers[dev]'
 >>> from transformers import pipeline
 >>> pipe = pipeline("text-classification")
 >>> pipe("This restaurant is awesome")
-
 
 ```

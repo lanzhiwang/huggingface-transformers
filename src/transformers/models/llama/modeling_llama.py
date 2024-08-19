@@ -215,9 +215,11 @@ class LlamaMLP(nn.Module):
         self.config = config
         self.hidden_size = config.hidden_size
         self.intermediate_size = config.intermediate_size
+        # 三个全连接层
         self.gate_proj = nn.Linear(self.hidden_size, self.intermediate_size, bias=False)
         self.up_proj = nn.Linear(self.hidden_size, self.intermediate_size, bias=False)
         self.down_proj = nn.Linear(self.intermediate_size, self.hidden_size, bias=False)
+        # 激活函数
         self.act_fn = ACT2FN[config.hidden_act]
 
     def forward(self, x):
@@ -278,6 +280,26 @@ class LlamaAttention(nn.Module):
         self.max_position_embeddings = config.max_position_embeddings
         self.rope_theta = config.rope_theta
         self.is_causal = True
+        # print("LlamaAttention __init__ self.layer_idx:", self.layer_idx)
+        # LlamaAttention __init__ self.layer_idx: 0
+        # print("LlamaAttention __init__ self.attention_dropout:", self.attention_dropout)
+        # LlamaAttention __init__ self.attention_dropout: 0.0
+        # print("LlamaAttention __init__ self.hidden_size:", self.hidden_size)
+        # LlamaAttention __init__ self.hidden_size: 512
+        # print("LlamaAttention __init__ self.num_heads:", self.num_heads)
+        # LlamaAttention __init__ self.num_heads: 4
+        # print("LlamaAttention __init__ self.head_dim:", self.head_dim)
+        # LlamaAttention __init__ self.head_dim: 128
+        # print("LlamaAttention __init__ self.num_key_value_heads:", self.num_key_value_heads)
+        # LlamaAttention __init__ self.num_key_value_heads: 4
+        # print("LlamaAttention __init__ self.num_key_value_groups:", self.num_key_value_groups)
+        # LlamaAttention __init__ self.num_key_value_groups: 1
+        # print("LlamaAttention __init__ self.max_position_embeddings:", self.max_position_embeddings)
+        # LlamaAttention __init__ self.max_position_embeddings: 256
+        # print("LlamaAttention __init__ self.rope_theta:", self.rope_theta)
+        # LlamaAttention __init__ self.rope_theta: 10.0
+        # print("LlamaAttention __init__ self.is_causal:", self.is_causal)
+        # LlamaAttention __init__ self.is_causal: True
 
         if (self.head_dim * self.num_heads) != self.hidden_size:
             raise ValueError(
@@ -285,10 +307,24 @@ class LlamaAttention(nn.Module):
                 f" and `num_heads`: {self.num_heads})."
             )
 
+        # Q K V
+        # Q K V 本质就是线性全连接层
         self.q_proj = nn.Linear(self.hidden_size, self.num_heads * self.head_dim, bias=config.attention_bias)
+        # print("LlamaAttention __init__ self.q_proj:", self.q_proj)
+        # LlamaAttention __init__ self.q_proj: Linear(in_features=512, out_features=512, bias=False)
+
         self.k_proj = nn.Linear(self.hidden_size, self.num_key_value_heads * self.head_dim, bias=config.attention_bias)
+        # print("LlamaAttention __init__ self.k_proj:", self.k_proj)
+        # LlamaAttention __init__ self.k_proj: Linear(in_features=512, out_features=512, bias=False)
+
         self.v_proj = nn.Linear(self.hidden_size, self.num_key_value_heads * self.head_dim, bias=config.attention_bias)
+        # print("LlamaAttention __init__ self.v_proj:", self.v_proj)
+        # LlamaAttention __init__ self.v_proj: Linear(in_features=512, out_features=512, bias=False)
+
         self.o_proj = nn.Linear(self.hidden_size, self.hidden_size, bias=config.attention_bias)
+        # print("LlamaAttention __init__ self.o_proj:", self.o_proj)
+        # LlamaAttention __init__ self.o_proj: Linear(in_features=512, out_features=512, bias=False)
+
         self._init_rope()
 
     def _init_rope(self):
@@ -298,6 +334,9 @@ class LlamaAttention(nn.Module):
                 max_position_embeddings=self.max_position_embeddings,
                 base=self.rope_theta,
             )
+            # print("LlamaAttention _init_rope self.rotary_emb:", self.rotary_emb)
+            # LlamaAttention _init_rope self.rotary_emb: LlamaRotaryEmbedding()
+
         else:
             scaling_type = self.config.rope_scaling["type"]
             scaling_factor = self.config.rope_scaling["factor"]
@@ -349,6 +388,7 @@ class LlamaAttention(nn.Module):
             value_states = torch.cat(value_states, dim=-1)
 
         else:
+            # 使用 Q K V
             query_states = self.q_proj(hidden_states)
             key_states = self.k_proj(hidden_states)
             value_states = self.v_proj(hidden_states)
@@ -618,6 +658,8 @@ class LlamaSdpaAttention(LlamaAttention):
         use_cache: bool = False,
         cache_position: Optional[torch.LongTensor] = None,
     ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
+        # print("LlamaSdpaAttention forward output_attentions:", output_attentions)
+        # LlamaSdpaAttention forward output_attentions: False
         if output_attentions:
             # TODO: Improve this warning with e.g. `model.config.attn_implementation = "manual"` once this is implemented.
             logger.warning_once(
@@ -634,18 +676,62 @@ class LlamaSdpaAttention(LlamaAttention):
                 cache_position=cache_position,
             )
 
+        # print("LlamaSdpaAttention forward hidden_states:", hidden_states.shape)
+        # LlamaSdpaAttention forward hidden_states: torch.Size([4, 10, 512])
+        # if attention_mask is not None:
+            # print("LlamaSdpaAttention forward attention_mask:", attention_mask.shape)
+            # LlamaSdpaAttention forward attention_mask: torch.Size([4, 1, 256, 256])
+
         bsz, q_len, _ = hidden_states.size()
+        # print("LlamaSdpaAttention forward bsz:", bsz)
+        # LlamaSdpaAttention forward bsz: 4
+        # print("LlamaSdpaAttention forward q_len:", q_len)
+        # LlamaSdpaAttention forward q_len: 10
 
         query_states = self.q_proj(hidden_states)
+        # print("LlamaSdpaAttention forward query_states:", query_states.shape)
+        # LlamaSdpaAttention forward query_states: torch.Size([4, 10, 512])
+        # print("LlamaSdpaAttention forward self.q_proj:", self.q_proj.weight.shape)
+        # LlamaSdpaAttention forward self.q_proj: torch.Size([512, 512])
+
         key_states = self.k_proj(hidden_states)
+        # print("LlamaSdpaAttention forward key_states:", key_states.shape)
+        # LlamaSdpaAttention forward key_states: torch.Size([4, 10, 512])
+        # print("LlamaSdpaAttention forward self.k_proj:", self.k_proj.weight.shape)
+        # LlamaSdpaAttention forward self.k_proj: torch.Size([512, 512])
+
         value_states = self.v_proj(hidden_states)
+        # print("LlamaSdpaAttention forward value_states:", value_states.shape)
+        # LlamaSdpaAttention forward value_states: torch.Size([4, 10, 512])
+        # print("LlamaSdpaAttention forward self.v_proj:", self.v_proj.weight.shape)
+        # LlamaSdpaAttention forward self.v_proj: torch.Size([512, 512])
 
         query_states = query_states.view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
+        # view(4, 10, 4, 128)
+        # print("LlamaSdpaAttention forward query_states:", query_states.shape)
+        # LlamaSdpaAttention forward query_states: torch.Size([4, 4, 10, 128])
+
         key_states = key_states.view(bsz, q_len, self.num_key_value_heads, self.head_dim).transpose(1, 2)
+        # view(4, 10, 4, 128)
+        # print("LlamaSdpaAttention forward key_states:", key_states.shape)
+        # LlamaSdpaAttention forward key_states: torch.Size([4, 4, 10, 128])
+
         value_states = value_states.view(bsz, q_len, self.num_key_value_heads, self.head_dim).transpose(1, 2)
+        # view(4, 10, 4, 128)
+        # print("LlamaSdpaAttention forward value_states:", value_states.shape)
+        # LlamaSdpaAttention forward value_states: torch.Size([4, 4, 10, 128])
 
         cos, sin = self.rotary_emb(value_states, position_ids)
+        # print("LlamaSdpaAttention forward cos:", cos.shape)
+        # LlamaSdpaAttention forward cos: torch.Size([1, 10, 128])
+        # print("LlamaSdpaAttention forward sin:", sin.shape)
+        # LlamaSdpaAttention forward sin: torch.Size([1, 10, 128])
+
         query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin)
+        # print("LlamaSdpaAttention forward query_states:", query_states.shape)
+        # LlamaSdpaAttention forward query_states: torch.Size([4, 4, 10, 128])
+        # print("LlamaSdpaAttention forward key_states:", key_states.shape)
+        # LlamaSdpaAttention forward key_states: torch.Size([4, 4, 10, 128])
 
         past_key_value = getattr(self, "past_key_value", past_key_value)
 
@@ -694,13 +780,39 @@ LLAMA_ATTENTION_CLASSES = {
 class LlamaDecoderLayer(nn.Module):
     def __init__(self, config: LlamaConfig, layer_idx: int):
         super().__init__()
-        self.hidden_size = config.hidden_size
+        self.hidden_size = config.hidden_size  # "hidden_size": 512,
 
+        # attention 层
+        # print("LlamaDecoderLayer __init__ config._attn_implementation:", config._attn_implementation)
+        # LlamaDecoderLayer __init__ config._attn_implementation: sdpa
         self.self_attn = LLAMA_ATTENTION_CLASSES[config._attn_implementation](config=config, layer_idx=layer_idx)
+        # print("LlamaDecoderLayer __init__ self.self_attn:", self.self_attn)
+        # LlamaDecoderLayer __init__ self.self_attn: LlamaSdpaAttention(
+        #   (q_proj): Linear(in_features=512, out_features=512, bias=False)
+        #   (k_proj): Linear(in_features=512, out_features=512, bias=False)
+        #   (v_proj): Linear(in_features=512, out_features=512, bias=False)
+        #   (o_proj): Linear(in_features=512, out_features=512, bias=False)
+        #   (rotary_emb): LlamaRotaryEmbedding()
+        # )
 
+        # mlp 层
         self.mlp = LlamaMLP(config)
+        # print("LlamaDecoderLayer __init__ self.mlp:", self.mlp)
+        # LlamaDecoderLayer __init__ self.mlp: LlamaMLP(
+        #   (gate_proj): Linear(in_features=512, out_features=1376, bias=False)
+        #   (up_proj): Linear(in_features=512, out_features=1376, bias=False)
+        #   (down_proj): Linear(in_features=1376, out_features=512, bias=False)
+        #   (act_fn): SiLU()
+        # )
+
+        # 两个 norm 层
         self.input_layernorm = LlamaRMSNorm(config.hidden_size, eps=config.rms_norm_eps)
+        # print("LlamaDecoderLayer __init__ self.input_layernorm:", self.input_layernorm)
+        # LlamaDecoderLayer __init__ self.input_layernorm: LlamaRMSNorm()
+
         self.post_attention_layernorm = LlamaRMSNorm(config.hidden_size, eps=config.rms_norm_eps)
+        # print("LlamaDecoderLayer __init__ self.post_attention_layernorm:", self.post_attention_layernorm)
+        # LlamaDecoderLayer __init__ self.post_attention_layernorm: LlamaRMSNorm()
 
     def forward(
         self,
@@ -732,9 +844,14 @@ class LlamaDecoderLayer(nn.Module):
                 "Passing `padding_mask` is deprecated and will be removed in v4.37. Please make sure use `attention_mask` instead.`"
             )
 
+        # print("LlamaDecoderLayer forward hidden_states:", hidden_states.shape)
+        # LlamaDecoderLayer forward hidden_states: torch.Size([4, 10, 512])
+
         residual = hidden_states
 
         hidden_states = self.input_layernorm(hidden_states)
+        # print("LlamaDecoderLayer forward input_layernorm hidden_states:", hidden_states.shape)
+        # LlamaDecoderLayer forward input_layernorm hidden_states: torch.Size([4, 10, 512])
 
         # Self Attention
         hidden_states, self_attn_weights, present_key_value = self.self_attn(
@@ -747,12 +864,23 @@ class LlamaDecoderLayer(nn.Module):
             cache_position=cache_position,
             **kwargs,
         )
+        # print("LlamaDecoderLayer forward self_attn hidden_states:", hidden_states.shape)
+        # LlamaDecoderLayer forward self_attn hidden_states: torch.Size([4, 10, 512])
+        # print("LlamaDecoderLayer forward self_attn self_attn_weights:", self_attn_weights.shape)
+        # print("LlamaDecoderLayer forward self_attn present_key_value:", present_key_value.shape)
+
         hidden_states = residual + hidden_states
 
         # Fully Connected
         residual = hidden_states
         hidden_states = self.post_attention_layernorm(hidden_states)
+        # print("LlamaDecoderLayer forward post_attention_layernorm hidden_states:", hidden_states.shape)
+        # LlamaDecoderLayer forward post_attention_layernorm hidden_states: torch.Size([4, 10, 512])
+
         hidden_states = self.mlp(hidden_states)
+        # print("LlamaDecoderLayer forward mlp hidden_states:", hidden_states.shape)
+        # LlamaDecoderLayer forward mlp hidden_states: torch.Size([4, 10, 512])
+
         hidden_states = residual + hidden_states
 
         outputs = (hidden_states,)
@@ -798,7 +926,8 @@ class LlamaPreTrainedModel(PreTrainedModel):
     _supports_cache_class = True
 
     def _init_weights(self, module):
-        std = self.config.initializer_range
+        std = self.config.initializer_range  # "initializer_range": 0.02,
+
         if isinstance(module, nn.Linear):
             module.weight.data.normal_(mean=0.0, std=std)
             if module.bias is not None:
@@ -916,14 +1045,50 @@ class LlamaModel(LlamaPreTrainedModel):
 
     def __init__(self, config: LlamaConfig):
         super().__init__(config)
-        self.padding_idx = config.pad_token_id
-        self.vocab_size = config.vocab_size
+        self.padding_idx = config.pad_token_id  # pad_token_id=None
+        self.vocab_size = config.vocab_size  # vocab_size=4000
 
+        # 一个 Embedding 层
+        # vocab_size=4000
+        # hidden_size=512
+        # self.padding_idx = None
         self.embed_tokens = nn.Embedding(config.vocab_size, config.hidden_size, self.padding_idx)
+        # print("LlamaModel __init__ self.embed_tokens:", self.embed_tokens)
+        # LlamaModel __init__ self.embed_tokens: Embedding(4000, 512)
+
+        # 多个 LlamaDecoderLayer 层
+        # num_hidden_layers = 4,
         self.layers = nn.ModuleList(
             [LlamaDecoderLayer(config, layer_idx) for layer_idx in range(config.num_hidden_layers)]
         )
+        # print("LlamaModel __init__ self.layers:", self.layers)
+        # LlamaModel __init__ self.layers: ModuleList(
+        #     (0-3): 4 x LlamaDecoderLayer(
+        #         (self_attn): LlamaSdpaAttention(
+        #             (q_proj): Linear(in_features=512, out_features=512, bias=False)
+        #             (k_proj): Linear(in_features=512, out_features=512, bias=False)
+        #             (v_proj): Linear(in_features=512, out_features=512, bias=False)
+        #             (o_proj): Linear(in_features=512, out_features=512, bias=False)
+        #             (rotary_emb): LlamaRotaryEmbedding()
+        #         )
+        #         (mlp): LlamaMLP(
+        #             (gate_proj): Linear(in_features=512, out_features=1376, bias=False)
+        #             (up_proj): Linear(in_features=512, out_features=1376, bias=False)
+        #             (down_proj): Linear(in_features=1376, out_features=512, bias=False)
+        #             (act_fn): SiLU()
+        #         )
+        #         (input_layernorm): LlamaRMSNorm()
+        #         (post_attention_layernorm): LlamaRMSNorm()
+        #     )
+        # )
+
+        # 一个 norm 层
+        # hidden_size=512
+        # rms_norm_eps = 1e-06
         self.norm = LlamaRMSNorm(config.hidden_size, eps=config.rms_norm_eps)
+        # print("LlamaModel __init__ self.norm:", self.norm)
+        # LlamaModel __init__ self.norm: LlamaRMSNorm()
+
         self.gradient_checkpointing = False
 
         # Register a causal mask to separate causal and padding mask creation. Merging happens in the attention class.
@@ -956,11 +1121,22 @@ class LlamaModel(LlamaPreTrainedModel):
         cache_position: Optional[torch.LongTensor] = None,
     ) -> Union[Tuple, BaseModelOutputWithPast]:
         output_attentions = output_attentions if output_attentions is not None else self.config.output_attentions
+        # print("LlamaModel forward output_attentions:", output_attentions)
+        # LlamaModel forward output_attentions: False
+
         output_hidden_states = (
             output_hidden_states if output_hidden_states is not None else self.config.output_hidden_states
         )
+        # print("LlamaModel forward output_hidden_states:", output_hidden_states)
+        # LlamaModel forward output_hidden_states: False
+
         use_cache = use_cache if use_cache is not None else self.config.use_cache
+        # print("LlamaModel forward use_cache:", use_cache)
+        # LlamaModel forward use_cache: True
+
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
+        # print("LlamaModel forward return_dict:", return_dict)
+        # LlamaModel forward return_dict: True
 
         if (input_ids is None) ^ (inputs_embeds is not None):
             raise ValueError(
@@ -973,8 +1149,13 @@ class LlamaModel(LlamaPreTrainedModel):
             )
             use_cache = False
 
+        # 使用 Embedding 层
         if inputs_embeds is None:
             inputs_embeds = self.embed_tokens(input_ids)
+        # print(input_ids.shape)
+        # torch.Size([4, 10])
+        # print("LlamaModel forward inputs_embeds:", inputs_embeds.shape)
+        # LlamaModel forward inputs_embeds: torch.Size([4, 10, 512])
 
         past_seen_tokens = 0
         if use_cache:  # kept for BC (cache positions)
@@ -1000,6 +1181,7 @@ class LlamaModel(LlamaPreTrainedModel):
         all_self_attns = () if output_attentions else None
         next_decoder_cache = None
 
+        # 使用多个 LlamaDecoderLayer 层
         for decoder_layer in self.layers:
             if output_hidden_states:
                 all_hidden_states += (hidden_states,)
@@ -1027,6 +1209,11 @@ class LlamaModel(LlamaPreTrainedModel):
                 )
 
             hidden_states = layer_outputs[0]
+            # print("LlamaModel forward hidden_states[0]:", hidden_states.shape)
+            # LlamaModel forward hidden_states[0]: torch.Size([4, 10, 512])
+            # LlamaModel forward hidden_states[0]: torch.Size([4, 10, 512])
+            # LlamaModel forward hidden_states[0]: torch.Size([4, 10, 512])
+            # LlamaModel forward hidden_states[0]: torch.Size([4, 10, 512])
 
             if use_cache:
                 next_decoder_cache = layer_outputs[2 if output_attentions else 1]
@@ -1034,7 +1221,10 @@ class LlamaModel(LlamaPreTrainedModel):
             if output_attentions:
                 all_self_attns += (layer_outputs[1],)
 
+        # 使用 norm 层
         hidden_states = self.norm(hidden_states)
+        # print("LlamaModel forward norm hidden_states:", hidden_states.shape)
+        # LlamaModel forward norm hidden_states: torch.Size([4, 10, 512])
 
         # add hidden states from the last decoder layer
         if output_hidden_states:
@@ -1096,13 +1286,16 @@ class LlamaModel(LlamaPreTrainedModel):
 
 
 class LlamaForCausalLM(LlamaPreTrainedModel):
+    """
+    下游任务
+    """
     _tied_weights_keys = ["lm_head.weight"]
 
     def __init__(self, config):
         super().__init__(config)
-        self.model = LlamaModel(config)
+        self.model = LlamaModel(config)  # 基础模型
         self.vocab_size = config.vocab_size
-        self.lm_head = nn.Linear(config.hidden_size, config.vocab_size, bias=False)
+        self.lm_head = nn.Linear(config.hidden_size, config.vocab_size, bias=False)  # 线性全连接层
 
         # Initialize weights and apply final processing
         self.post_init()
@@ -1172,6 +1365,7 @@ class LlamaForCausalLM(LlamaPreTrainedModel):
         )
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
 
+        # 基础模型输出
         # decoder outputs consists of (dec_features, layer_state, dec_hidden, dec_attn)
         outputs = self.model(
             input_ids=input_ids,
@@ -1186,12 +1380,14 @@ class LlamaForCausalLM(LlamaPreTrainedModel):
             cache_position=cache_position,
         )
 
+        # 使用基础模型的第一个输出
         hidden_states = outputs[0]
         if self.config.pretraining_tp > 1:
             lm_head_slices = self.lm_head.weight.split(self.vocab_size // self.config.pretraining_tp, dim=0)
             logits = [F.linear(hidden_states, lm_head_slices[i]) for i in range(self.config.pretraining_tp)]
             logits = torch.cat(logits, dim=-1)
         else:
+            # 将基础模型的第一个输出使用到线性全连接层
             logits = self.lm_head(hidden_states)
         logits = logits.float()
 
@@ -1200,6 +1396,7 @@ class LlamaForCausalLM(LlamaPreTrainedModel):
             # Shift so that tokens < n predict n
             shift_logits = logits[..., :-1, :].contiguous()
             shift_labels = labels[..., 1:].contiguous()
+            # 损失函数计算损失
             # Flatten the tokens
             loss_fct = CrossEntropyLoss()
             shift_logits = shift_logits.view(-1, self.config.vocab_size)
@@ -1321,11 +1518,14 @@ class LlamaForCausalLM(LlamaPreTrainedModel):
     LLAMA_START_DOCSTRING,
 )
 class LlamaForSequenceClassification(LlamaPreTrainedModel):
+    """
+    下游任务
+    """
     def __init__(self, config):
         super().__init__(config)
         self.num_labels = config.num_labels
-        self.model = LlamaModel(config)
-        self.score = nn.Linear(config.hidden_size, self.num_labels, bias=False)
+        self.model = LlamaModel(config)  # 基础模型
+        self.score = nn.Linear(config.hidden_size, self.num_labels, bias=False)  # 线性全连接层
 
         # Initialize weights and apply final processing
         self.post_init()
@@ -1358,6 +1558,7 @@ class LlamaForSequenceClassification(LlamaPreTrainedModel):
         """
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
 
+        # 基础模型输出
         transformer_outputs = self.model(
             input_ids,
             attention_mask=attention_mask,
@@ -1370,6 +1571,7 @@ class LlamaForSequenceClassification(LlamaPreTrainedModel):
             return_dict=return_dict,
         )
         hidden_states = transformer_outputs[0]
+        # 使用线性连接层
         logits = self.score(hidden_states)
 
         if input_ids is not None:
@@ -1403,6 +1605,7 @@ class LlamaForSequenceClassification(LlamaPreTrainedModel):
                 else:
                     self.config.problem_type = "multi_label_classification"
 
+            # 使用损失函数计算损失
             if self.config.problem_type == "regression":
                 loss_fct = MSELoss()
                 if self.num_labels == 1:
@@ -1436,6 +1639,9 @@ SQuAD (a linear layer on top of the hidden-states output to compute `span start 
     LLAMA_START_DOCSTRING,
 )
 class LlamaForQuestionAnswering(LlamaPreTrainedModel):
+    """
+    下游任务
+    """
     # Copied from transformers.models.bloom.modeling_bloom.BloomForQuestionAnswering.__init__ with Bloom->Llama
     def __init__(self, config):
         super().__init__(config)
