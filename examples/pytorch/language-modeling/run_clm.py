@@ -606,9 +606,13 @@ def main():
 
     # Initialize our Trainer
     trainer = Trainer(
+        # 模型
         model=model,
+        # 训练参数
         args=training_args,
+        # 数据集
         train_dataset=train_dataset if training_args.do_train else None,
+        # 用于评估的数据集
         eval_dataset=eval_dataset if training_args.do_eval else None,
         tokenizer=tokenizer,
         # Data collator will default to DataCollatorWithPadding, so we change it.
@@ -626,6 +630,7 @@ def main():
             checkpoint = training_args.resume_from_checkpoint
         elif last_checkpoint is not None:
             checkpoint = last_checkpoint
+        # step 1
         train_result = trainer.train(resume_from_checkpoint=checkpoint)
         trainer.save_model()  # Saves the tokenizer too for easy upload
 

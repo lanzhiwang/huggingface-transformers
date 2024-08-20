@@ -1605,6 +1605,7 @@ class Trainer:
                 self._move_model_to_device(self.model, args.device)
             self.model_wrapped = self.model
 
+        # step 2
         inner_training_loop = find_executable_batch_size(
             self._inner_training_loop, self._train_batch_size, args.auto_find_batch_size
         )
@@ -1628,6 +1629,7 @@ class Trainer:
                 ignore_keys_for_eval=ignore_keys_for_eval,
             )
 
+    # step
     def _inner_training_loop(
         self, batch_size=None, args=None, resume_from_checkpoint=None, trial=None, ignore_keys_for_eval=None
     ):
@@ -1897,6 +1899,7 @@ class Trainer:
                     _ = list(sampler)
 
         total_batched_samples = 0
+        # step 2-1
         for epoch in range(epochs_trained, num_train_epochs):
             epoch_iterator = train_dataloader
             if hasattr(epoch_iterator, "set_epoch"):
@@ -1925,6 +1928,7 @@ class Trainer:
                 rng_to_sync = True
 
             step = -1
+            # step 2-2
             for step, inputs in enumerate(epoch_iterator):
                 total_batched_samples += 1
 
@@ -1958,6 +1962,7 @@ class Trainer:
                     self.control = self.callback_handler.on_step_begin(args, self.state, self.control)
 
                 with self.accelerator.accumulate(model):
+                    # step 3
                     tr_loss_step = self.training_step(model, inputs)
 
                 if (
@@ -2873,6 +2878,7 @@ class Trainer:
 
         return ctx_manager
 
+    # step
     def training_step(self, model: nn.Module, inputs: Dict[str, Union[torch.Tensor, Any]]) -> torch.Tensor:
         """
         Perform a training step on a batch of inputs.
@@ -2899,11 +2905,13 @@ class Trainer:
             return loss_mb.reduce_mean().detach().to(self.args.device)
 
         with self.compute_loss_context_manager():
+            # step 4 正向传播
             loss = self.compute_loss(model, inputs)
 
         if self.args.n_gpu > 1:
             loss = loss.mean()  # mean() to average on multi-gpu parallel training
 
+        # 反向传播
         if self.use_apex:
             with amp.scale_loss(loss, self.optimizer) as scaled_loss:
                 scaled_loss.backward()
@@ -2912,6 +2920,7 @@ class Trainer:
 
         return loss.detach() / self.args.gradient_accumulation_steps
 
+    # step
     def compute_loss(self, model, inputs, return_outputs=False):
         """
         How the loss is computed by Trainer. By default, all models return the loss in the first element.
@@ -3060,6 +3069,7 @@ class Trainer:
         # Now we should move it back to subsequent compute still works.
         model.to(self.args.device)
 
+    # step 模型保存
     def _save(self, output_dir: Optional[str] = None, state_dict=None):
         # If we are executing this function, we are the process zero, so we don't check for that.
         output_dir = output_dir if output_dir is not None else self.args.output_dir
@@ -3071,6 +3081,7 @@ class Trainer:
         # They can then be reloaded using `from_pretrained()`
         if not isinstance(self.model, supported_classes):
             if state_dict is None:
+                # 保存模型本质上是保存模型的静态字典
                 state_dict = self.model.state_dict()
 
             if isinstance(unwrap_model(self.model), supported_classes):
@@ -3080,10 +3091,12 @@ class Trainer:
             else:
                 logger.info("Trainer.model is not a `PreTrainedModel`, only saving its state dict.")
                 if self.args.save_safetensors:
+                    # SAFE_WEIGHTS_NAME = "model.safetensors"
                     safetensors.torch.save_file(
                         state_dict, os.path.join(output_dir, SAFE_WEIGHTS_NAME), metadata={"format": "pt"}
                     )
                 else:
+                    # WEIGHTS_NAME = "pytorch_model.bin"
                     torch.save(state_dict, os.path.join(output_dir, WEIGHTS_NAME))
         else:
             self.model.save_pretrained(
