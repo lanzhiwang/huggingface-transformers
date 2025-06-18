@@ -210,6 +210,12 @@ class PretrainedConfig(PushToHubMixin):
             key = super().__getattribute__("attribute_map")[key]
         return super().__getattribute__(key)
 
+    # kwargs = {
+    #     'pad_token_id': None,
+    #     'bos_token_id': 1,
+    #     'eos_token_id': 2,
+    #     'tie_word_embeddings': False
+    # }
     def __init__(self, **kwargs):
         # Attributes with defaults
         self.return_dict = kwargs.pop("return_dict", True)
@@ -220,6 +226,7 @@ class PretrainedConfig(PushToHubMixin):
         self.use_bfloat16 = kwargs.pop("use_bfloat16", False)
         self.tf_legacy_loss = kwargs.pop("tf_legacy_loss", False)  # Only used by TensorFlow models
         self.pruned_heads = kwargs.pop("pruned_heads", {})
+        # self.tie_word_embeddings = False
         self.tie_word_embeddings = kwargs.pop(
             "tie_word_embeddings", True
         )  # Whether input and output word embeddings should be tied for all MLM, LM and Seq2Seq models.
@@ -269,9 +276,13 @@ class PretrainedConfig(PushToHubMixin):
         # Tokenizer arguments TODO: eventually tokenizer and models should share the same config
         self.tokenizer_class = kwargs.pop("tokenizer_class", None)
         self.prefix = kwargs.pop("prefix", None)
+        # self.bos_token_id = 1
         self.bos_token_id = kwargs.pop("bos_token_id", None)
+        # self.pad_token_id = None
         self.pad_token_id = kwargs.pop("pad_token_id", None)
+        # self.eos_token_id = 2
         self.eos_token_id = kwargs.pop("eos_token_id", None)
+        # self.sep_token_id = None
         self.sep_token_id = kwargs.pop("sep_token_id", None)
 
         self.decoder_start_token_id = kwargs.pop("decoder_start_token_id", None)
@@ -316,6 +327,7 @@ class PretrainedConfig(PushToHubMixin):
             )
 
         # Additional attributes without default values
+        # kwargs = {}
         for key, value in kwargs.items():
             try:
                 setattr(self, key, value)

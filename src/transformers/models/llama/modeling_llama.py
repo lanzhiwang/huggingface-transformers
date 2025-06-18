@@ -364,10 +364,20 @@ class LlamaPreTrainedModel(PreTrainedModel):
 class LlamaModel(LlamaPreTrainedModel):
     def __init__(self, config: LlamaConfig):
         super().__init__(config)
+        # self.padding_idx = None
         self.padding_idx = config.pad_token_id
+        # self.vocab_size = 32000
         self.vocab_size = config.vocab_size
 
+        """
+        config.vocab_size = 32000
+        config.hidden_size = 2048
+        self.padding_idx = None
+        """
         self.embed_tokens = nn.Embedding(config.vocab_size, config.hidden_size, self.padding_idx)
+        """
+        config.num_hidden_layers = 16
+        """
         self.layers = nn.ModuleList(
             [LlamaDecoderLayer(config, layer_idx) for layer_idx in range(config.num_hidden_layers)]
         )
