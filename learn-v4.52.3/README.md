@@ -15,4 +15,6 @@ pip install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --index-url https
 
 find . -name "*.py" -exec black {} \;
 
+rm -rf src/transformers.egg-info/ src/transformers/__pycache__/ src/transformers/generation/__pycache__/ src/transformers/integrations/__pycache__/ src/transformers/loss/__pycache__/ src/transformers/models/__pycache__/ src/transformers/models/auto/__pycache__/ src/transformers/models/llama/__pycache__/ src/transformers/quantizers/__pycache__/ src/transformers/utils/__pycache__/
+
 ```

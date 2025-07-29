@@ -281,14 +281,49 @@ class LlamaAttention(nn.Module):
 class LlamaDecoderLayer(GradientCheckpointingLayer):
     def __init__(self, config: LlamaConfig, layer_idx: int):
         super().__init__()
+        """
+        config.hidden_size = 4
+        self.hidden_size = 4
+        """
         self.hidden_size = config.hidden_size
 
         self.self_attn = LlamaAttention(config=config, layer_idx=layer_idx)
 
         self.mlp = LlamaMLP(config)
+        """
+        config.hidden_size = 4
+        config.rms_norm_eps = 1e-06
+        """
         self.input_layernorm = LlamaRMSNorm(config.hidden_size, eps=config.rms_norm_eps)
         self.post_attention_layernorm = LlamaRMSNorm(config.hidden_size, eps=config.rms_norm_eps)
 
+    """
+    hidden_states: torch.Size([4, 3, 4])
+    attention_mask: None
+    position_ids: tensor([[0, 1, 2]])
+    past_key_value: <transformers.cache_utils.DynamicCache object at 0x7f43146bb530>
+    output_attentions: False
+    use_cache: True
+    cache_position: tensor([0, 1, 2])
+    position_embeddings: 2
+        position_embeddings: torch.Size([1, 3, 2])
+        position_embeddings: torch.Size([1, 3, 2])
+    flash_attn_kwargs: {}
+    layer_outputs: 1
+        layer_outputs: torch.Size([4, 3, 4])
+    #########################################
+    layer_outputs = decoder_layer(
+        hidden_states,
+        attention_mask=causal_mask,
+        position_ids=position_ids,
+        past_key_value=past_key_values,
+        output_attentions=output_attentions,
+        use_cache=use_cache,
+        cache_position=cache_position,
+        position_embeddings=position_embeddings,
+        **flash_attn_kwargs,
+    )
+    """
     def forward(
         self,
         hidden_states: torch.Tensor,
@@ -301,9 +336,31 @@ class LlamaDecoderLayer(GradientCheckpointingLayer):
         position_embeddings: Optional[Tuple[torch.Tensor, torch.Tensor]] = None,  # necessary, but kept here for BC
         **kwargs: Unpack[FlashAttentionKwargs],
     ) -> Tuple[torch.FloatTensor, Optional[Tuple[torch.FloatTensor, torch.FloatTensor]]]:
+        """
+        hidden_states: torch.Size([4, 3, 4])
+        residual.size() = torch.Size([4, 3, 4])
+        """
         residual = hidden_states
+        """
+        hidden_states.size() = torch.Size([4, 3, 4])
+        """
         hidden_states = self.input_layernorm(hidden_states)
 
+        """
+        hidden_states: torch.Size([4, 3, 4])
+        attention_mask: None
+        position_ids: tensor([[0, 1, 2]])
+        past_key_value: <transformers.cache_utils.DynamicCache object at 0x7f0179cb8fb0>
+        output_attentions: False
+        use_cache: True
+        cache_position: tensor([0, 1, 2])
+        position_embeddings: 2
+            position_embeddings: torch.Size([1, 3, 2])
+            position_embeddings: torch.Size([1, 3, 2])
+        kwargs: {}
+        hidden_states: torch.Size([4, 3, 4])
+        self_attn_weights: None
+        """
         # Self Attention
         hidden_states, self_attn_weights = self.self_attn(
             hidden_states=hidden_states,
@@ -320,7 +377,9 @@ class LlamaDecoderLayer(GradientCheckpointingLayer):
 
         # Fully Connected
         residual = hidden_states
+        # hidden_states: torch.Size([4, 3, 4])
         hidden_states = self.post_attention_layernorm(hidden_states)
+        # hidden_states: torch.Size([4, 3, 4])
         hidden_states = self.mlp(hidden_states)
         hidden_states = residual + hidden_states
 
@@ -366,21 +425,25 @@ class LlamaModel(LlamaPreTrainedModel):
         super().__init__(config)
         # self.padding_idx = None
         self.padding_idx = config.pad_token_id
-        # self.vocab_size = 32000
+        # self.vocab_size = 5
         self.vocab_size = config.vocab_size
 
         """
-        config.vocab_size = 32000
-        config.hidden_size = 2048
+        config.vocab_size = 5
+        config.hidden_size = 4
         self.padding_idx = None
         """
         self.embed_tokens = nn.Embedding(config.vocab_size, config.hidden_size, self.padding_idx)
         """
-        config.num_hidden_layers = 16
+        config.num_hidden_layers = 4
         """
         self.layers = nn.ModuleList(
             [LlamaDecoderLayer(config, layer_idx) for layer_idx in range(config.num_hidden_layers)]
         )
+        """
+        config.hidden_size = 4
+        config.rms_norm_eps = 1e-06
+        """
         self.norm = LlamaRMSNorm(config.hidden_size, eps=config.rms_norm_eps)
         self.rotary_emb = LlamaRotaryEmbedding(config=config)
         self.gradient_checkpointing = False
@@ -398,6 +461,7 @@ class LlamaModel(LlamaPreTrainedModel):
     @auto_docstring
     def forward(
         self,
+        # input_ids.size() = torch.Size([4, 3])
         input_ids: Optional[torch.LongTensor] = None,
         attention_mask: Optional[torch.Tensor] = None,
         position_ids: Optional[torch.LongTensor] = None,
@@ -407,17 +471,34 @@ class LlamaModel(LlamaPreTrainedModel):
         output_attentions: Optional[bool] = None,
         output_hidden_states: Optional[bool] = None,
         cache_position: Optional[torch.LongTensor] = None,
+        # flash_attn_kwargs = {}
         **flash_attn_kwargs: Unpack[FlashAttentionKwargs],
     ) -> BaseModelOutputWithPast:
+        """
+        self.config.output_attentions = False
+        output_attentions = False
+        """
         output_attentions = output_attentions if output_attentions is not None else self.config.output_attentions
+        """
+        self.config.output_hidden_states = False
+        output_hidden_states = False
+        """
         output_hidden_states = (
             output_hidden_states if output_hidden_states is not None else self.config.output_hidden_states
         )
+        """
+        self.config.use_cache = True
+        use_cache = True
+        """
         use_cache = use_cache if use_cache is not None else self.config.use_cache
 
         if (input_ids is None) ^ (inputs_embeds is not None):
             raise ValueError("You must specify exactly one of input_ids or inputs_embeds")
 
+        """
+        self.gradient_checkpointing = False
+        self.training = True
+        """
         if self.gradient_checkpointing and self.training and use_cache:
             logger.warning_once(
                 "`use_cache=True` is incompatible with gradient checkpointing. Setting `use_cache=False`."
@@ -429,29 +510,66 @@ class LlamaModel(LlamaPreTrainedModel):
             raise ValueError("The `past_key_values` should be either a `Cache` object or `None`.")
 
         if inputs_embeds is None:
+            """
+            input_ids.size() = torch.Size([4, 3])
+            inputs_embeds.size() = torch.Size([4, 3, 4])
+            """
             inputs_embeds = self.embed_tokens(input_ids)
 
         if use_cache and past_key_values is None:
+            """
+            past_key_values = <transformers.cache_utils.DynamicCache object at 0x7fee051a21b0>
+            """
             past_key_values = DynamicCache()
 
         if cache_position is None:
+            """
+            past_key_values.get_seq_length() = 0
+            past_seen_tokens = 0
+            """
             past_seen_tokens = past_key_values.get_seq_length() if past_key_values is not None else 0
+            """
+            cache_position = tensor([0, 1, 2])
+            """
             cache_position = torch.arange(
                 past_seen_tokens, past_seen_tokens + inputs_embeds.shape[1], device=inputs_embeds.device
             )
 
         if position_ids is None:
+            """
+            position_ids = tensor([[0, 1, 2]])
+            """
             position_ids = cache_position.unsqueeze(0)
 
+        """
+        attention_mask = None
+        inputs_embeds: torch.Size([4, 3, 4])
+        cache_position = tensor([0, 1, 2])
+        past_key_values = <transformers.cache_utils.DynamicCache object at 0x7fee051a21b0>
+        output_attentions = False
+        causal_mask = None
+        """
         causal_mask = self._update_causal_mask(
             attention_mask, inputs_embeds, cache_position, past_key_values, output_attentions
         )
 
+        """
+        hidden_states.size() = torch.Size([4, 3, 4])
+        """
         hidden_states = inputs_embeds
 
+        """
+        len(position_embeddings) = 2
+        position_embeddings[0].size() = torch.Size([1, 3, 2])
+        position_embeddings[1].size() = torch.Size([1, 3, 2])
+        """
         # create position embeddings to be shared across the decoder layers
         position_embeddings = self.rotary_emb(hidden_states, position_ids)
 
+        """
+        all_hidden_states = None
+        all_self_attns = None
+        """
         # decoder layers
         all_hidden_states = () if output_hidden_states else None
         all_self_attns = () if output_attentions else None
@@ -460,6 +578,21 @@ class LlamaModel(LlamaPreTrainedModel):
             if output_hidden_states:
                 all_hidden_states += (hidden_states,)
 
+            """
+            hidden_states: torch.Size([4, 3, 4])
+            attention_mask: None
+            position_ids: tensor([[0, 1, 2]])
+            past_key_value: <transformers.cache_utils.DynamicCache object at 0x7f43146bb530>
+            output_attentions: False
+            use_cache: True
+            cache_position: tensor([0, 1, 2])
+            position_embeddings: 2
+                position_embeddings: torch.Size([1, 3, 2])
+                position_embeddings: torch.Size([1, 3, 2])
+            flash_attn_kwargs: {}
+            layer_outputs: 1
+                layer_outputs: torch.Size([4, 3, 4])
+            """
             layer_outputs = decoder_layer(
                 hidden_states,
                 attention_mask=causal_mask,
@@ -472,17 +605,28 @@ class LlamaModel(LlamaPreTrainedModel):
                 **flash_attn_kwargs,
             )
 
+            """
+            hidden_states: torch.Size([4, 3, 4])
+            """
             hidden_states = layer_outputs[0]
 
             if output_attentions:
                 all_self_attns += (layer_outputs[1],)
 
+        # hidden_states.size(): torch.Size([4, 3, 4])
         hidden_states = self.norm(hidden_states)
 
         # add hidden states from the last decoder layer
         if output_hidden_states:
             all_hidden_states += (hidden_states,)
 
+        """
+        last_hidden_state: torch.Size([4, 3, 4])
+        use_cache: True
+        past_key_values: <transformers.cache_utils.DynamicCache object at 0x7f7194377980>
+        hidden_states: None
+        attentions: None
+        """
         return BaseModelOutputWithPast(
             last_hidden_state=hidden_states,
             past_key_values=past_key_values if use_cache else None,

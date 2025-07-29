@@ -160,19 +160,19 @@ class LlamaConfig(PretrainedConfig):
 
     def __init__(
         self,
-        # vocab_size = 32000
+        # vocab_size = 5
         vocab_size=32000,
-        # hidden_size = 2048
+        # hidden_size = 4
         hidden_size=4096,
-        # intermediate_size = 5504
+        # intermediate_size = 6
         intermediate_size=11008,
-        # num_hidden_layers = 16
+        # num_hidden_layers = 4
         num_hidden_layers=32,
-        # num_attention_heads = 16
+        # num_attention_heads = 4
         num_attention_heads=32,
         num_key_value_heads=None,
         hidden_act="silu",
-        # max_position_embeddings = 1024
+        # max_position_embeddings = 3
         max_position_embeddings=2048,
         initializer_range=0.02,
         rms_norm_eps=1e-6,
@@ -191,24 +191,25 @@ class LlamaConfig(PretrainedConfig):
         # kwargs = {}
         **kwargs,
     ):
-        # self.vocab_size = 32000
+        # self.vocab_size = 5
         self.vocab_size = vocab_size
-        # self.max_position_embeddings = 1024
+        # self.max_position_embeddings = 3
         self.max_position_embeddings = max_position_embeddings
-        # self.hidden_size = 2048
+        # self.hidden_size = 4
         self.hidden_size = hidden_size
-        # self.intermediate_size = 5504
+        # self.intermediate_size = 6
         self.intermediate_size = intermediate_size
-        # self.num_hidden_layers = 16
+        # self.num_hidden_layers = 4
         self.num_hidden_layers = num_hidden_layers
-        # self.num_attention_heads = 16
+        # self.num_attention_heads = 4
         self.num_attention_heads = num_attention_heads
 
         # for backward compatibility
         if num_key_value_heads is None:
+            # num_key_value_heads = 4
             num_key_value_heads = num_attention_heads
 
-        # self.num_key_value_heads = 16
+        # self.num_key_value_heads = 4
         self.num_key_value_heads = num_key_value_heads
         self.hidden_act = hidden_act
         self.initializer_range = initializer_range
@@ -220,7 +221,12 @@ class LlamaConfig(PretrainedConfig):
         self.attention_bias = attention_bias
         self.attention_dropout = attention_dropout
         self.mlp_bias = mlp_bias
-        # self.head_dim = 128
+        """
+        self.hidden_size = 4
+        self.num_attention_heads = 4
+
+        self.head_dim = 1
+        """
         self.head_dim = head_dim if head_dim is not None else self.hidden_size // self.num_attention_heads
         # Validate the correctness of rotary position embeddings parameters
         # BC: if there is a 'type' field, copy it it to 'rope_type'.
